@@ -91,6 +91,11 @@
         .table-row-odd {
             background-color: #D1E9FF;
         }
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
     </style>
 </head>
 <body class="p-8 flex justify-center items-center min-h-screen">
@@ -100,6 +105,41 @@
             <p class="text-center text-blue-200 mt-2">Mode by Cah Lanang Josjis</p>
         </div>
         <p class="mb-6 text-gray-700 text-center">Unggah file Excel (XLSX) atau CSV-mu di bawah ini untuk memulai analisis statistik dan simulasi klaim.</p>
+
+        <div class="p-4 mb-6 rounded-md bg-blue-50 border border-blue-200">
+            <h2 class="text-lg font-semibold text-blue-800 mb-4">Input Parameter Simulasi</h2>
+            <div class="input-group">
+                <div>
+                    <label for="deductibleInput" class="block text-sm font-medium text-gray-700">Deductible ($)</label>
+                    <input type="number" id="deductibleInput" value="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="coInsuranceRateInput" class="block text-sm font-medium text-gray-700">Co-insurance Rate (%)</label>
+                    <input type="number" id="coInsuranceRateInput" value="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="coInsuranceMaxInput" class="block text-sm font-medium text-gray-700">Co-insurance Max ($)</label>
+                    <input type="number" id="coInsuranceMaxInput" value="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="reinsuranceRetentionInput" class="block text-sm font-medium text-gray-700">Reinsurance Retention ($)</label>
+                    <input type="number" id="reinsuranceRetentionInput" value="10000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="reimbursementCapInput" class="block text-sm font-medium text-gray-700">Reimbursement Cap ($)</label>
+                    <input type="number" id="reimbursementCapInput" value="25000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="maxMonthlyPremiumInput" class="block text-sm font-medium text-gray-700">Max Monthly Premium ($)</label>
+                    <input type="number" id="maxMonthlyPremiumInput" value="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="discountRateInput" class="block text-sm font-medium text-gray-700">Discount Rate (%)</label>
+                    <input type="number" id="discountRateInput" value="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+            </div>
+        </div>
+
         <div class="flex flex-col items-center">
             <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="mb-4 p-2 border border-blue-400 rounded-md w-full max-w-sm">
             <button onclick="startAnalysis()" class="btn">
@@ -346,14 +386,15 @@
 
 
                 // --- Bagian 2: Simulasi Klaim dan Analisis Profitabilitas ---
-                // Parameter Produk dan Reasuransi
-                const deductible = 100;
-                const coInsuranceRate = 0.10;
-                const coInsuranceMax = 500;
-                const reinsuranceRetention = 10000;
-                const reimbursementCap = 25000; // Batas plafon klaim 25,000
-                const maxMonthlyPremium = 500; // Batas Premi Bulanan $500
-
+                // Mendapatkan nilai dari input pengguna
+                const deductible = parseFloat(document.getElementById('deductibleInput').value) || 100;
+                const coInsuranceRate = parseFloat(document.getElementById('coInsuranceRateInput').value) / 100 || 0.10;
+                const coInsuranceMax = parseFloat(document.getElementById('coInsuranceMaxInput').value) || 500;
+                const reinsuranceRetention = parseFloat(document.getElementById('reinsuranceRetentionInput').value) || 10000;
+                const reimbursementCap = parseFloat(document.getElementById('reimbursementCapInput').value) || 25000;
+                const maxMonthlyPremium = parseFloat(document.getElementById('maxMonthlyPremiumInput').value) || 500;
+                const discountRate = parseFloat(document.getElementById('discountRateInput').value) / 100 || 0.08;
+                
                 let totalGrossClaim = 0;
                 let totalCappedClaim = 0;
                 let totalAbjfReClaim = 0;
@@ -424,6 +465,12 @@
 
                 const abjfReLossRatio = (totalAbjfReClaim / totalAnnualPremium) * 100;
 
+                // Hitung Nilai Sekarang (Present Value) dengan bunga diskonto 8%
+                const presentValueClaims = totalAbjfReClaim / (1 + discountRate);
+                const presentValuePremiums = totalAnnualPremium / (1 + discountRate);
+                const discountedLossRatio = (presentValueClaims / presentValuePremiums) * 100;
+
+
                 simulationSummaryContainer.innerHTML = `
                     <h3 class="text-md font-semibold mb-2 text-gray-800">Koefisien Regresi Linear (Premi Tahunan)</h3>
                     <p class="text-gray-600">Model regresi linear mengidentifikasi hubungan antara faktor risiko dan klaim. Premi baru dihitung berdasarkan prediksi klaim dari model ini, ditambah margin 20%.</p>
@@ -447,6 +494,11 @@
                         <li>Total Klaim untuk ABJF Re: $${totalAbjfReClaim.toFixed(2)}</li>
                         <li>Total Premi Tahunan Berdasarkan Model Baru: $${totalAnnualPremium.toFixed(2)}</li>
                         <li><strong>Loss Ratio ABJF Re: ${abjfReLossRatio.toFixed(2)}%</strong></li>
+                        <hr class="my-4 border-blue-300">
+                        <li class="font-bold text-lg text-blue-900">Perhitungan dengan Bunga Diskon ${discountRate * 100}%</li>
+                        <li>Nilai Sekarang Klaim: $${presentValueClaims.toFixed(2)}</li>
+                        <li>Nilai Sekarang Premi: $${presentValuePremiums.toFixed(2)}</li>
+                        <li><strong>Loss Ratio Setelah Diskon: ${discountedLossRatio.toFixed(2)}%</strong></li>
                     </ul>
                 `;
 
