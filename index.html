@@ -5,182 +5,236 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analisis & Simulasi Klaim</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #F0F4F8; /* Light blue background */
-            color: #1E3A8A; /* Dark blue text */
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
         }
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             background-color: #FFFFFF;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            border: 2px solid #1E3A8A;
         }
         .header {
-            background-color: #1E3A8A;
-            border-bottom: 2px solid #3B82F6;
+            background-color: #1e3a8a; /* blue-900 */
+            color: white;
         }
-        .table-container {
-            max-height: 400px;
-            overflow-y: auto;
+        input, select {
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db; /* gray-300 */
         }
-        th, td {
-            padding: 12px;
-        }
-        thead th {
-            position: sticky;
-            top: 0;
-            background-color: #1E3A8A;
-            color: #FFFFFF;
-            z-index: 10;
-        }
-        .alert {
+        .summary-card {
+            background-color: #f1f5f9; /* slate-100 */
+            border: 1px solid #e2e8f0; /* slate-200 */
             padding: 1rem;
-            margin-top: 1rem;
             border-radius: 0.5rem;
-            display: none;
-            font-weight: bold;
-        }
-        .alert-error {
-            color: #991B1B;
-            background-color: #FEE2E2;
-            border: 1px solid #EF4444;
-        }
-        .btn {
-            background-color: #3B82F6;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #2563EB;
-        }
-        input[type="file"] {
-            color: #1E3A8A;
-            border-color: #60A5FA;
-            background-color: #EBF4FF;
-        }
-        input[type="file"]::file-selector-button {
-            background-color: #1E3A8A;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        input[type="file"]::file-selector-button:hover {
-            background-color: #112D5E;
-        }
-        .ringkasan-box {
-            background-color: #EBF4FF;
-            border: 1px solid #93C5FD;
-        }
-        .table-header-cell {
-            background-color: #1E3A8A;
-            color: #FFFFFF;
-        }
-        .table-row-even {
-            background-color: #EBF4FF;
-        }
-        .table-row-odd {
-            background-color: #D1E9FF;
-        }
-        .input-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
         }
     </style>
 </head>
-<body class="p-8 flex justify-center items-center min-h-screen">
-    <div class="container mx-auto p-8 rounded-lg">
-        <div class="header p-6 rounded-t-lg mb-4">
-            <h1 class="text-3xl font-bold text-center text-white">Analisis & Simulasi Klaim</h1>
-            <p class="text-center text-blue-200 mt-2">Mode by Cah Lanang Josjis</p>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto p-6 md:p-8 rounded-2xl shadow-lg border border-gray-200">
+        <div class="header p-6 rounded-xl mb-6 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold">Analisis & Simulasi Klaim</h1>
+            <p class="text-blue-200 mt-2 text-sm">made by cah lanang josjis</p>
         </div>
-        <p class="mb-6 text-gray-700 text-center">Unggah file Excel (XLSX) atau CSV-mu di bawah ini untuk memulai analisis statistik dan simulasi klaim.</p>
+        
+        <div id="info-box" class="p-4 mb-6 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm">
+            <h3 class="font-semibold mb-2">Petunjuk Penggunaan:</h3>
+            <p>Pastikan file Excel (XLSX) atau CSV Anda memiliki kolom dengan nama berikut (tidak case-sensitive): <strong>Umur, BMI, Jumlah Anak, Status Perokok, Gender, Region,</strong> dan kolom yang mengandung kata <strong>'Klaim'</strong>.</p>
+        </div>
 
-        <div class="p-4 mb-6 rounded-md bg-blue-50 border border-blue-200">
-            <h2 class="text-lg font-semibold text-blue-800 mb-4">Input Parameter Simulasi</h2>
-            <div class="input-group">
-                <div>
-                    <label for="deductibleInput" class="block text-sm font-medium text-gray-700">Deductible ($)</label>
-                    <input type="number" id="deductibleInput" value="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+        <div id="parameters-section" class="mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Simulation Parameters -->
+                <div class="p-4 rounded-lg border border-gray-200 bg-gray-50">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Input Parameter Simulasi</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="deductibleInput" class="block text-sm font-medium text-gray-700">Deductible ($)</label>
+                            <input type="number" id="deductibleInput" value="100" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="coInsuranceRateInput" class="block text-sm font-medium text-gray-700">Co-insurance Rate (%)</label>
+                            <input type="number" id="coInsuranceRateInput" value="10" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="coInsuranceMaxInput" class="block text-sm font-medium text-gray-700">Co-insurance Max ($)</label>
+                            <input type="number" id="coInsuranceMaxInput" value="500" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="reinsuranceRetentionInput" class="block text-sm font-medium text-gray-700">Reinsurance Retention ($)</label>
+                            <input type="number" id="reinsuranceRetentionInput" value="10000" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="reinsuranceCoverInput" class="block text-sm font-medium text-gray-700">Reinsurance Cover (%)</label>
+                            <input type="number" id="reinsuranceCoverInput" value="90" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="reimbursementCapInput" class="block text-sm font-medium text-gray-700">Reimbursement Cap ($)</label>
+                            <input type="number" id="reimbursementCapInput" value="25000" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="minMonthlyPremiumInput" class="block text-sm font-medium text-gray-700">Premi Bulanan Min ($)</label>
+                            <input type="number" id="minMonthlyPremiumInput" value="100" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="maxMonthlyPremiumInput" class="block text-sm font-medium text-gray-700">Premi Bulanan Max ($)</label>
+                            <input type="number" id="maxMonthlyPremiumInput" value="500" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="discountRateInput" class="block text-sm font-medium text-gray-700">Discount Rate (%)</label>
+                            <input type="number" id="discountRateInput" value="8" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label for="coInsuranceRateInput" class="block text-sm font-medium text-gray-700">Co-insurance Rate (%)</label>
-                    <input type="number" id="coInsuranceRateInput" value="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="coInsuranceMaxInput" class="block text-sm font-medium text-gray-700">Co-insurance Max ($)</label>
-                    <input type="number" id="coInsuranceMaxInput" value="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="reinsuranceRetentionInput" class="block text-sm font-medium text-gray-700">Reinsurance Retention ($)</label>
-                    <input type="number" id="reinsuranceRetentionInput" value="10000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="reimbursementCapInput" class="block text-sm font-medium text-gray-700">Reimbursement Cap ($)</label>
-                    <input type="number" id="reimbursementCapInput" value="25000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="maxMonthlyPremiumInput" class="block text-sm font-medium text-gray-700">Max Monthly Premium ($)</label>
-                    <input type="number" id="maxMonthlyPremiumInput" value="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="discountRateInput" class="block text-sm font-medium text-gray-700">Discount Rate (%)</label>
-                    <input type="number" id="discountRateInput" value="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                <!-- Exclusion Parameters -->
+                <div class="p-4 rounded-lg border border-gray-200 bg-gray-50">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Parameter Pengecualian Klaim</h2>
+                    <p class="text-sm text-gray-600 mb-4">Atur batas untuk mengecualikan polis dari analisis. Biarkan kosong untuk tidak menerapkan filter.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="excludeAgeInput" class="block text-sm font-medium text-gray-700">Kecualikan Umur di Atas</label>
+                            <input type="number" id="excludeAgeInput" placeholder="e.g., 55" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="excludeBmiInput" class="block text-sm font-medium text-gray-700">Kecualikan BMI di Atas</label>
+                            <input type="number" id="excludeBmiInput" placeholder="e.g., 35" step="0.1" class="mt-1 block w-full p-2 text-sm">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label for="excludeSmokerInput" class="block text-sm font-medium text-gray-700">Kecualikan Perokok</label>
+                            <select id="excludeSmokerInput" class="mt-1 block w-full p-2 text-sm">
+                                <option value="no">Tidak</option>
+                                <option value="yes">Ya</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="flex flex-col items-center">
-            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="mb-4 p-2 border border-blue-400 rounded-md w-full max-w-sm">
-            <button onclick="startAnalysis()" class="btn">
+        <div class="flex flex-col items-center mt-6">
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="mb-4 p-2 border rounded-md w-full max-w-md text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            <button onclick="startAnalysis()" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md">
                 Mulai Analisis
             </button>
         </div>
 
-        <div id="loading" class="mt-6 hidden text-blue-600 text-center">
-            Memproses data, mohon tunggu...
+        <div id="loading" class="mt-6 hidden text-center">
+            <p class="text-blue-600">Memproses data, mohon tunggu...</p>
         </div>
-        <div id="error-alert" class="alert alert-error" role="alert"></div>
+        <div id="error-alert" class="hidden mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert"></div>
 
-        <div id="output" class="mt-8 p-6 ringkasan-box rounded-lg hidden">
-            <h2 class="text-lg font-semibold mb-4 text-gray-800">Ringkasan Statistik Awal</h2>
-            <div id="statistical-summary" class="mb-6"></div>
+        <div id="main-content" class="hidden mt-8 space-y-8">
+            <div id="exclusion-summary" class="hidden p-4 rounded-lg bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm"></div>
             
-            <h2 class="text-lg font-semibold mt-8 mb-4 text-gray-800">Ringkasan Hasil Simulasi</h2>
-            <div id="simulation-summary" class="mb-6"></div>
-            
-            <h2 class="text-lg font-semibold mt-8 mb-4 text-gray-800">Tabel Hasil Simulasi Klaim</h2>
-            <div id="results-table-container" class="table-container border border-blue-300 rounded-lg"></div>
+             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div id="analysis-section" class="p-6 rounded-lg border bg-white">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Ringkasan Statistik Awal</h2>
+                    <div id="statistical-summary" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+                <div class="p-6 rounded-lg border bg-white flex flex-col items-center justify-center">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 text-center">Distribusi Polis per Region</h2>
+                    <div class="w-full max-w-xs mx-auto">
+                        <canvas id="regionChart"></canvas>
+                    </div>
+                </div>
+             </div>
+
+             <div class="p-6 rounded-lg border bg-white">
+                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Distribusi Frekuensi Klaim</h2>
+                 <canvas id="claimsHistogram"></canvas>
+             </div>
+             
+             <div id="output" class="p-6 rounded-lg border bg-white">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Hasil Simulasi & Model</h2>
+                <div id="simulation-summary"></div>
+                
+                <h2 class="text-xl font-semibold mt-8 mb-4 text-gray-800">Tabel Hasil Simulasi Klaim (Top 100)</h2>
+                <div id="results-table-container" class="max-h-[500px] overflow-y-auto border rounded-lg"></div>
+             </div>
         </div>
+
+        <div id="calculator-section" class="hidden p-6 rounded-lg border bg-white mt-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">Kalkulator Premi Individu</h2>
+            <p class="text-gray-600 mb-4 text-sm">Masukkan data pemegang polis untuk menghitung premi yang diprediksi berdasarkan model.</p>
+            <div id="individual-loading" class="hidden text-center text-blue-600 mb-4">Menghitung...</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label for="individualAge" class="block text-sm font-medium text-gray-700">Umur</label>
+                    <input type="number" id="individualAge" class="mt-1 block w-full p-2 text-sm" placeholder="e.g., 25">
+                </div>
+                <div>
+                    <label for="individualBMI" class="block text-sm font-medium text-gray-700">BMI</label>
+                    <input type="number" id="individualBMI" step="0.01" class="mt-1 block w-full p-2 text-sm" placeholder="e.g., 22.5">
+                </div>
+                <div>
+                    <label for="individualChildren" class="block text-sm font-medium text-gray-700">Jumlah Anak</label>
+                    <input type="number" id="individualChildren" class="mt-1 block w-full p-2 text-sm" placeholder="e.g., 1">
+                </div>
+                <div>
+                    <label for="individualSmoker" class="block text-sm font-medium text-gray-700">Status Perokok</label>
+                    <select id="individualSmoker" class="mt-1 block w-full p-2 text-sm">
+                        <option value="no">Tidak</option>
+                        <option value="yes">Ya</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="individualGender" class="block text-sm font-medium text-gray-700">Gender</label>
+                    <select id="individualGender" class="mt-1 block w-full p-2 text-sm">
+                        <option value="female">Perempuan</option>
+                        <option value="male">Laki-laki</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="individualRegion" class="block text-sm font-medium text-gray-700">Region</label>
+                    <select id="individualRegion" class="mt-1 block w-full p-2 text-sm">
+                        <option value="southwest">Southwest</option>
+                        <option value="northeast">Northeast</option>
+                        <option value="northwest">Northwest</option>
+                        <option value="southeast">Southeast</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="calculateIndividualPremium()" class="mt-4 w-full px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
+                Hitung Premi
+            </button>
+            <div id="individual-result" class="hidden mt-4 p-4 rounded-md bg-blue-50 text-gray-700 border border-blue-200">
+                <h3 class="text-md font-semibold text-gray-800">Hasil Premi yang Diprediksi</h3>
+                <ul class="list-disc ml-5 space-y-1 text-sm">
+                    <li id="predicted-monthly-premium">Premi Bulanan:</li>
+                    <li id="predicted-annual-premium">Premi Tahunan:</li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('output').style.display = 'none';
-        });
+        let betaCoefficients = null;
+        let regionChartInstance = null;
+        let claimsHistogramInstance = null;
 
-        function showAlert(message, type = 'error') {
+        function showAlert(message) {
             const alertDiv = document.getElementById('error-alert');
             alertDiv.textContent = message;
             alertDiv.style.display = 'block';
         }
         
+        function formatCurrency(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return '$0.00';
+            }
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+        }
+        
         function calculateAndDisplayStats(data, header) {
             const values = data.map(row => parseFloat(row[header])).filter(val => !isNaN(val));
             if (values.length === 0) {
-                return `<h3 class="font-medium mt-4 text-gray-800">Statistik ${header}:</h3><p class="text-gray-600">Tidak ada data numerik untuk kolom ini.</p>`;
+                return `<div class="p-4 bg-gray-50 rounded-lg"><h3 class="font-medium text-gray-800 text-sm">Statistik ${header}:</h3><p class="text-gray-600 text-xs">Tidak ada data numerik.</p></div>`;
             }
 
             const totalCount = values.length;
@@ -189,125 +243,132 @@
             const max = Math.max(...values);
             
             const squaredDifferences = values.map(val => Math.pow(val - mean, 2));
-            const variance = squaredDifferences.reduce((sum, val) => sum + val, 0) / (totalCount - 1);
+            const variance = squaredDifferences.reduce((sum, val) => sum + val, 0) / (totalCount > 1 ? totalCount - 1 : 1);
             const stdDev = Math.sqrt(variance);
 
+            const isCurrency = header.toLowerCase().includes('klaim');
+
             return `
-                <div class="mb-4">
-                    <h3 class="font-medium text-gray-800">Statistik ${header}:</h3>
-                    <ul class="list-disc ml-5 space-y-1 text-gray-600 text-sm">
-                        <li>Jumlah Data: ${totalCount}</li>
-                        <li>Rata-rata: ${header.toLowerCase().includes('klaim') ? '$' : ''}${mean.toFixed(2)}</li>
-                        <li>Minimum: ${header.toLowerCase().includes('klaim') ? '$' : ''}${min.toFixed(2)}</li>
-                        <li>Maksimum: ${header.toLowerCase().includes('klaim') ? '$' : ''}${max.toFixed(2)}</li>
-                        <li>Varians: ${variance.toFixed(2)}</li>
-                        <li>Simpangan Baku: ${stdDev.toFixed(2)}</li>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium text-gray-800 text-sm">${header}</h3>
+                    <ul class="mt-2 space-y-1 text-gray-600 text-xs">
+                        <li><strong>Jumlah:</strong> ${totalCount}</li>
+                        <li><strong>Rata-rata:</strong> ${isCurrency ? formatCurrency(mean) : mean.toFixed(2)}</li>
+                        <li><strong>Min:</strong> ${isCurrency ? formatCurrency(min) : min.toFixed(2)}</li>
+                        <li><strong>Max:</strong> ${isCurrency ? formatCurrency(max) : max.toFixed(2)}</li>
+                        <li><strong>Simp. Baku:</strong> ${isCurrency ? formatCurrency(stdDev) : stdDev.toFixed(2)}</li>
                     </ul>
                 </div>
             `;
         }
-        
+
         function getLinearRegressionCoefficients(data) {
-            const X = data.map(row => [
-                1, // Intercept
-                row.Umur,
-                row.BMI,
-                row['Status Perokok'].toLowerCase().includes('yes') ? 1 : 0
-            ]);
+            const featureNames = ['Intercept', 'Umur', 'BMI', 'Jumlah Anak'];
+            const hasSmokerVariance = new Set(data.map(r => String(r['Status Perokok']).toLowerCase().includes('yes'))).size > 1;
+            const hasGenderVariance = new Set(data.map(r => String(r.Gender).toLowerCase())).size > 1;
+            const regionValues = [...new Set(data.map(r => String(r.Region).toLowerCase()))];
+            const hasRegionVariance = regionValues.length > 1;
+
+            if (hasSmokerVariance) featureNames.push('Status Perokok (Ya)');
+            if (hasGenderVariance) featureNames.push('Gender (Pria)');
+            if (hasRegionVariance) {
+                // Set a consistent baseline region, e.g., the first one alphabetically
+                regionValues.sort();
+                for (let i = 1; i < regionValues.length; i++) {
+                    featureNames.push(`Region (${regionValues[i]})`);
+                }
+            }
+
+            const X = data.map(row => {
+                const features = [1, row.Umur, row.BMI, row['Jumlah Anak']];
+                if (hasSmokerVariance) features.push(String(row['Status Perokok']).toLowerCase().includes('yes') ? 1 : 0);
+                if (hasGenderVariance) features.push(String(row.Gender).toLowerCase() === 'male' ? 1 : 0);
+                if (hasRegionVariance) {
+                    for (let i = 1; i < regionValues.length; i++) {
+                        features.push(String(row.Region).toLowerCase() === regionValues[i] ? 1 : 0);
+                    }
+                }
+                return features;
+            });
+
             const Y = data.map(row => row['Besar Klaim']);
-
-            const m = X[0].length; // Jumlah variabel (termasuk intercept)
-            const n = X.length;   // Jumlah data
+            const m = X[0].length;
+            const n = X.length;
             
-            // Transpose matriks X
-            const X_t = new Array(m).fill(0).map(() => new Array(n).fill(0));
-            for (let i = 0; i < n; i++) {
-                for (let j = 0; j < m; j++) {
-                    X_t[j][i] = X[i][j];
-                }
-            }
+            const X_t = Array(m).fill(0).map(() => Array(n).fill(0));
+            for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) X_t[j][i] = X[i][j];
 
-            // Hitung X_t * X
-            const X_t_X = new Array(m).fill(0).map(() => new Array(m).fill(0));
-            for (let i = 0; i < m; i++) {
-                for (let j = 0; j < m; j++) {
-                    for (let k = 0; k < n; k++) {
-                        X_t_X[i][j] += X_t[i][k] * X[k][j];
+            const X_t_X = Array(m).fill(0).map(() => Array(m).fill(0));
+            for (let i = 0; i < m; i++) for (let j = 0; j < m; j++) for (let k = 0; k < n; k++) X_t_X[i][j] += X_t[i][k] * X[k][j];
+            
+            function inverse(M) {
+                const size = M.length;
+                const aug = M.map((row, i) => [...row, ...Array(size).fill(0).map((_, j) => i === j ? 1 : 0)]);
+                for (let i = 0; i < size; i++) {
+                    let pivotRow = i;
+                    for (let k = i + 1; k < size; k++) if (Math.abs(aug[k][i]) > Math.abs(aug[pivotRow][i])) pivotRow = k;
+                    [aug[i], aug[pivotRow]] = [aug[pivotRow], aug[i]];
+                    const pivot = aug[i][i];
+                    if (Math.abs(pivot) < 1e-9) return null;
+                    for (let j = i; j < size * 2; j++) aug[i][j] /= pivot;
+                    for (let k = 0; k < size; k++) if (k !== i) {
+                        const factor = aug[k][i];
+                        for (let j = i; j < size * 2; j++) aug[k][j] -= factor * aug[i][j];
                     }
                 }
+                return aug.map(row => row.slice(size));
             }
 
-            // Invers dari (X_t * X)
-            // Ini adalah implementasi sederhana untuk matriks 4x4.
-            function inverse4x4(M) {
-                const M_inv = new Array(4).fill(0).map(() => new Array(4).fill(0));
-                // Matriks augmented [M | I]
-                const aug = M.map((row, i) => [...row, ...new Array(4).fill(0).map((_, j) => (i === j ? 1 : 0))]);
-                
-                for (let i = 0; i < 4; i++) {
-                    // Normalisasi baris i
-                    let pivot = aug[i][i];
-                    if (pivot === 0) throw new Error("Tidak bisa melakukan inversi matriks. Coba data lain.");
-                    for (let j = 0; j < 8; j++) {
-                        aug[i][j] /= pivot;
-                    }
-                    // Eliminasi Gauss-Jordan
-                    for (let k = 0; k < 4; k++) {
-                        if (k !== i) {
-                            let factor = aug[k][i];
-                            for (let j = 0; j < 8; j++) {
-                                aug[k][j] -= factor * aug[i][j];
-                            }
-                        }
-                    }
-                }
-                // Ambil matriks invers dari augmented
-                for (let i = 0; i < 4; i++) {
-                    for (let j = 0; j < 4; j++) {
-                        M_inv[i][j] = aug[i][j + 4];
-                    }
-                }
-                return M_inv;
-            }
+            const X_t_X_inv = inverse(X_t_X);
+            if (!X_t_X_inv) return null;
 
-            let X_t_X_inv;
-            try {
-                X_t_X_inv = inverse4x4(X_t_X);
-            } catch (e) {
-                return null; // Mengembalikan null jika inversi gagal
-            }
+            const X_t_Y = Array(m).fill(0);
+            for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) X_t_Y[i] += X_t[i][j] * Y[j];
+            
+            const beta = Array(m).fill(0);
+            for (let i = 0; i < m; i++) for (let j = 0; j < m; j++) beta[i] += X_t_X_inv[i][j] * X_t_Y[j];
 
-            // Hitung X_t * Y
-            const X_t_Y = new Array(m).fill(0);
-            for (let i = 0; i < m; i++) {
-                for (let j = 0; j < n; j++) {
-                    X_t_Y[i] += X_t[i][j] * Y[j];
+            const result = {};
+            featureNames.forEach((name, index) => result[name] = beta[index]);
+            return result;
+        }
+        
+        function predictClaim(umur, bmi, children, isSmoker, gender, region) {
+            if (!betaCoefficients) return 0;
+            
+            let predictedClaimValue = betaCoefficients['Intercept'] || 0;
+            predictedClaimValue += (betaCoefficients['Umur'] || 0) * umur;
+            predictedClaimValue += (betaCoefficients['BMI'] || 0) * bmi;
+            predictedClaimValue += (betaCoefficients['Jumlah Anak'] || 0) * children;
+            
+            if (betaCoefficients['Status Perokok (Ya)']) {
+                predictedClaimValue += (isSmoker.toLowerCase() === 'yes' ? betaCoefficients['Status Perokok (Ya)'] : 0);
+            }
+            if (betaCoefficients['Gender (Pria)']) {
+                predictedClaimValue += (gender.toLowerCase() === 'male' ? betaCoefficients['Gender (Pria)'] : 0);
+            }
+            
+            for (const key in betaCoefficients) {
+                if (key.startsWith('Region (') && key.includes(region.toLowerCase())) {
+                    predictedClaimValue += betaCoefficients[key];
                 }
             }
-
-            // Hitung B = (X_t * X)^-1 * (X_t * Y)
-            const beta = new Array(m).fill(0);
-            for (let i = 0; i < m; i++) {
-                for (let j = 0; j < m; j++) {
-                    beta[i] += X_t_X_inv[i][j] * X_t_Y[j];
-                }
-            }
-
-            return beta;
+            
+            return Math.max(0, predictedClaimValue);
         }
 
         async function startAnalysis() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
-            const outputDiv = document.getElementById('output');
-            const statisticalSummaryContainer = document.getElementById('statistical-summary');
-            const simulationSummaryContainer = document.getElementById('simulation-summary');
-            const resultsTableContainer = document.getElementById('results-table-container');
             const loadingDiv = document.getElementById('loading');
             const errorAlertDiv = document.getElementById('error-alert');
+            const mainContentDiv = document.getElementById('main-content');
+            const calculatorSection = document.getElementById('calculator-section');
+            const exclusionSummaryDiv = document.getElementById('exclusion-summary');
 
             errorAlertDiv.style.display = 'none';
-            outputDiv.style.display = 'none';
+            mainContentDiv.style.display = 'none';
+            calculatorSection.style.display = 'none';
             loadingDiv.style.display = 'block';
 
             if (!file) {
@@ -317,13 +378,13 @@
             }
 
             try {
-                const fileType = file.name.split('.').pop();
+                const fileType = file.name.split('.').pop().toLowerCase();
                 let jsonData;
 
                 if (fileType === 'csv') {
                     const csvText = await file.text();
-                    jsonData = Papa.parse(csvText, { header: true, dynamicTyping: true }).data;
-                } else if (fileType === 'xlsx' || fileType === 'xls') {
+                    jsonData = Papa.parse(csvText, { header: true, dynamicTyping: true, skipEmptyLines: true, transformHeader: h => h.trim() }).data;
+                } else if (['xlsx', 'xls'].includes(fileType)) {
                     const data = new Uint8Array(await file.arrayBuffer());
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
@@ -336,207 +397,281 @@
                 }
 
                 if (jsonData.length === 0) {
-                    showAlert("File tidak mengandung data.");
+                    showAlert("File tidak mengandung data atau kosong.");
                     loadingDiv.style.display = 'none';
                     return;
                 }
 
-                const klaimHeader = Object.keys(jsonData[0]).find(key => key && key.toLowerCase().includes('klaim'));
-                if (!klaimHeader) {
-                    showAlert("Kolom 'Klaim' tidak ditemukan. Pastikan nama kolom benar.");
+                jsonData = jsonData.map(row => {
+                    const newRow = {};
+                    for (const key in row) {
+                        let newKey = key.trim();
+                        if (newKey.toLowerCase().includes('klaim')) newKey = 'Besar Klaim';
+                        else if (newKey.toLowerCase() === 'umur') newKey = 'Umur';
+                        else if (newKey.toLowerCase() === 'bmi') newKey = 'BMI';
+                        else if (newKey.toLowerCase() === 'jumlah anak') newKey = 'Jumlah Anak';
+                        else if (newKey.toLowerCase() === 'status perokok') newKey = 'Status Perokok';
+                        else if (newKey.toLowerCase() === 'gender') newKey = 'Gender';
+                        else if (newKey.toLowerCase() === 'region') newKey = 'Region';
+                        newRow[newKey] = row[key];
+                    }
+                    return newRow;
+                });
+                
+                const requiredHeaders = ['Umur', 'BMI', 'Jumlah Anak', 'Status Perokok', 'Gender', 'Region', 'Besar Klaim'];
+                const firstRowHeaders = Object.keys(jsonData[0]);
+                const missingHeaders = requiredHeaders.filter(rh => !firstRowHeaders.includes(rh));
+                
+                if (missingHeaders.length > 0) {
+                    showAlert(`Kolom berikut tidak ditemukan: ${missingHeaders.join(', ')}`);
                     loadingDiv.style.display = 'none';
                     return;
                 }
+                
+                const excludeAge = parseFloat(document.getElementById('excludeAgeInput').value) || Infinity;
+                const excludeBmi = parseFloat(document.getElementById('excludeBmiInput').value) || Infinity;
+                const excludeSmoker = document.getElementById('excludeSmokerInput').value === 'yes';
 
-                const dataForRegression = jsonData.map(row => ({
-                    ...row,
-                    'Besar Klaim': parseFloat(row[klaimHeader]),
+                const originalCount = jsonData.length;
+                const filteredJsonData = jsonData.filter(row => {
+                    const age = parseFloat(row.Umur);
+                    const bmi = parseFloat(row.BMI);
+                    const isSmoker = String(row['Status Perokok'])?.toLowerCase().includes('yes');
+                    if (age > excludeAge) return false;
+                    if (bmi > excludeBmi) return false;
+                    if (excludeSmoker && isSmoker) return false;
+                    return true;
+                });
+                
+                const excludedCount = originalCount - filteredJsonData.length;
+                exclusionSummaryDiv.style.display = excludedCount > 0 ? 'block' : 'none';
+                exclusionSummaryDiv.textContent = `Berdasarkan kriteria Anda, ${excludedCount} dari ${originalCount} polis telah dikecualikan dari analisis ini.`;
+                
+                if (filteredJsonData.length < 9) {
+                    showAlert(`Data yang tersisa setelah filter (${filteredJsonData.length} baris) tidak cukup. Dibutuhkan minimal 9 baris.`);
+                    loadingDiv.style.display = 'none';
+                    return;
+                }
+                
+                const dataForRegression = filteredJsonData.map(row => ({
+                    'Besar Klaim': parseFloat(row['Besar Klaim']),
                     'Umur': parseFloat(row['Umur']),
                     'BMI': parseFloat(row['BMI']),
-                    'Status Perokok': row['Status Perokok']
-                })).filter(row => !isNaN(row['Besar Klaim']) && !isNaN(row['Umur']) && !isNaN(row['BMI']) && row['Status Perokok'] !== undefined);
-
-                if (dataForRegression.length < 4) {
-                    showAlert("Jumlah data tidak cukup untuk model regresi linear. Dibutuhkan minimal 4 baris data lengkap.");
+                    'Jumlah Anak': parseFloat(row['Jumlah Anak']),
+                    'Status Perokok': String(row['Status Perokok']),
+                    'Gender': String(row['Gender']),
+                    'Region': String(row['Region'])
+                })).filter(row => !Object.values(row).some(v => v === undefined || (typeof v === 'number' && isNaN(v))));
+                
+                if (dataForRegression.length < 9) {
+                    showAlert("Data valid yang tersisa tidak cukup untuk model regresi. Dibutuhkan minimal 9 baris data lengkap.");
                     loadingDiv.style.display = 'none';
                     return;
                 }
 
-                const betaCoefficients = getLinearRegressionCoefficients(dataForRegression);
+                betaCoefficients = getLinearRegressionCoefficients(dataForRegression);
                 if (!betaCoefficients) {
-                    showAlert("Gagal menghitung model regresi. Data mungkin tidak cocok atau terjadi error.");
+                    showAlert("Gagal menghitung model regresi. Data mungkin memiliki multikolinearitas sempurna. Coba dengan set data yang berbeda.");
                     loadingDiv.style.display = 'none';
                     return;
                 }
                 
-                const [beta0, beta1, beta2, beta3] = betaCoefficients;
-                const profitMargin = 1.20; // 20% margin
-                
-                function predictClaim(umur, bmi, isSmoker) {
-                    const smokerNum = isSmoker.toLowerCase().includes('yes') ? 1 : 0;
-                    return beta0 + beta1 * umur + beta2 * bmi + beta3 * smokerNum;
-                }
-
-                // --- Bagian 1: Analisis Statistik Awal ---
+                const statisticalSummaryContainer = document.getElementById('statistical-summary');
                 statisticalSummaryContainer.innerHTML = '';
-                const headersToAnalyze = [klaimHeader, 'Umur', 'BMI', 'Jumlah Anak'];
+                const headersToAnalyze = ['Besar Klaim', 'Umur', 'BMI', 'Jumlah Anak'];
                 headersToAnalyze.forEach(header => {
-                    statisticalSummaryContainer.innerHTML += calculateAndDisplayStats(jsonData, header);
+                    statisticalSummaryContainer.innerHTML += calculateAndDisplayStats(filteredJsonData, header);
                 });
 
+                // Get all parameters
+                const deductible = parseFloat(document.getElementById('deductibleInput').value);
+                const coInsuranceRate = parseFloat(document.getElementById('coInsuranceRateInput').value) / 100;
+                const coInsuranceMax = parseFloat(document.getElementById('coInsuranceMaxInput').value);
+                const reinsuranceRetention = parseFloat(document.getElementById('reinsuranceRetentionInput').value);
+                const reinsuranceCoverRate = parseFloat(document.getElementById('reinsuranceCoverInput').value) / 100;
+                const reimbursementCap = parseFloat(document.getElementById('reimbursementCapInput').value);
+                const minMonthlyPremium = parseFloat(document.getElementById('minMonthlyPremiumInput').value);
+                const maxMonthlyPremium = parseFloat(document.getElementById('maxMonthlyPremiumInput').value);
 
-                // --- Bagian 2: Simulasi Klaim dan Analisis Profitabilitas ---
-                // Mendapatkan nilai dari input pengguna
-                const deductible = parseFloat(document.getElementById('deductibleInput').value) || 100;
-                const coInsuranceRate = parseFloat(document.getElementById('coInsuranceRateInput').value) / 100 || 0.10;
-                const coInsuranceMax = parseFloat(document.getElementById('coInsuranceMaxInput').value) || 500;
-                const reinsuranceRetention = parseFloat(document.getElementById('reinsuranceRetentionInput').value) || 10000;
-                const reimbursementCap = parseFloat(document.getElementById('reimbursementCapInput').value) || 25000;
-                const maxMonthlyPremium = parseFloat(document.getElementById('maxMonthlyPremiumInput').value) || 500;
-                const discountRate = parseFloat(document.getElementById('discountRateInput').value) / 100 || 0.08;
-                
-                let totalGrossClaim = 0;
-                let totalCappedClaim = 0;
-                let totalAbjfReClaim = 0;
-                let totalPolicies = 0;
-                let totalAnnualPremium = 0;
+                // Initialize accumulators
+                let totalPolicies = 0, totalAnnualPremium = 0, totalAbjfReClaim = 0, totalSehatPlusFinalClaim = 0;
 
-                const simulatedData = jsonData.map(row => {
-                    const originalClaim = parseFloat(row[klaimHeader]);
-                    const bmi = parseFloat(row['BMI']);
-                    const isSmoker = row['Status Perokok'];
-                    const children = parseFloat(row['Jumlah Anak']) || 0;
+                const simulatedData = filteredJsonData.map(row => {
+                    const originalClaim = parseFloat(row['Besar Klaim']);
+                    if (isNaN(originalClaim)) return null;
 
-
-                    if (isNaN(originalClaim) || isNaN(bmi)) {
-                        return null;
-                    }
-                    
                     totalPolicies++;
-                    totalGrossClaim += originalClaim;
-
-                    const predictedClaim = predictClaim(row.Umur, row.BMI, row['Status Perokok']);
-                    const newAnnualPremium = Math.max(0, predictedClaim) * profitMargin;
-                    const newMonthlyPremium = newAnnualPremium / 12;
-
-                    // Terapkan batas premi bulanan
-                    const cappedMonthlyPremium = Math.min(newMonthlyPremium, maxMonthlyPremium);
-                    const cappedAnnualPremium = cappedMonthlyPremium * 12;
-
-                    totalAnnualPremium += cappedAnnualPremium;
                     
+                    // Premium Calculation
+                    const predictedClaim = predictClaim(parseFloat(row.Umur), parseFloat(row.BMI), parseFloat(row['Jumlah Anak']), String(row['Status Perokok']), String(row['Gender']), String(row['Region']));
+                    let newMonthlyPremium = Math.max(minMonthlyPremium, Math.min(maxMonthlyPremium, predictedClaim / 12));
+                    const newAnnualPremium = newMonthlyPremium * 12;
+                    totalAnnualPremium += newAnnualPremium;
+                    
+                    // Claim Calculation Waterfall
                     const cappedClaim = Math.min(originalClaim, reimbursementCap);
-                    totalCappedClaim += cappedClaim;
-
                     const claimAfterDeductible = Math.max(0, cappedClaim - deductible);
-                    let coInsuranceAmount = claimAfterDeductible * coInsuranceRate;
-                    if (coInsuranceAmount > coInsuranceMax) {
-                        coInsuranceAmount = coInsuranceMax;
-                    }
-
+                    const coInsuranceAmount = Math.min(claimAfterDeductible * coInsuranceRate, coInsuranceMax);
                     const insuredClaim = deductible + coInsuranceAmount;
                     const sehatPlusNetClaim = cappedClaim - insuredClaim;
-
-                    let sehatPlusFinalClaim;
-                    let abjfReClaim;
                     
-                    if (sehatPlusNetClaim > reinsuranceRetention) {
-                        sehatPlusFinalClaim = reinsuranceRetention;
-                        abjfReClaim = sehatPlusNetClaim - sehatPlusFinalClaim;
-                    } else {
-                        sehatPlusFinalClaim = sehatPlusNetClaim;
-                        abjfReClaim = 0;
-                    }
-
+                    const surplus = Math.max(0, sehatPlusNetClaim - reinsuranceRetention);
+                    const abjfReClaim = surplus * reinsuranceCoverRate;
+                    const sehatPlusPortionOfSurplus = surplus * (1 - reinsuranceCoverRate);
+                    const sehatPlusFinalClaim = Math.min(sehatPlusNetClaim, reinsuranceRetention) + sehatPlusPortionOfSurplus;
+                    
                     totalAbjfReClaim += abjfReClaim;
+                    totalSehatPlusFinalClaim += sehatPlusFinalClaim;
 
-                    return {
-                        ...row,
-                        'Klaim Dibatasi': cappedClaim.toFixed(2),
-                        'Premi (Bulanan)': cappedMonthlyPremium.toFixed(2),
-                        'Klaim Tertanggung': insuredClaim.toFixed(2),
-                        'Klaim SehatPlus': sehatPlusFinalClaim.toFixed(2),
-                        'Klaim ABJF Re': abjfReClaim.toFixed(2)
+                    return { ...row,
+                        'Premi (Bulanan)': formatCurrency(newMonthlyPremium),
+                        'Premi Tahunan': formatCurrency(newAnnualPremium), // Added this column
+                        'Klaim Akhir SehatPlus': formatCurrency(sehatPlusFinalClaim),
+                        'Klaim ABJF Re': formatCurrency(abjfReClaim)
                     };
-                }).filter(row => row !== null);
-
-                // Mengurutkan data klaim dari yang tertinggi
-                simulatedData.sort((a, b) => parseFloat(b[klaimHeader]) - parseFloat(a[klaimHeader]));
-
-                const abjfReLossRatio = (totalAbjfReClaim / totalAnnualPremium) * 100;
-
-                // Hitung Nilai Sekarang (Present Value) dengan bunga diskonto 8%
-                const presentValueClaims = totalAbjfReClaim / (1 + discountRate);
-                const presentValuePremiums = totalAnnualPremium / (1 + discountRate);
-                const discountedLossRatio = (presentValueClaims / presentValuePremiums) * 100;
-
+                }).filter(row => row !== null).sort((a, b) => parseFloat(b['Besar Klaim']) - parseFloat(a['Besar Klaim']));
+                
+                // Final Calculations
+                const abjfReLossRatio = totalAnnualPremium > 0 ? (totalAbjfReClaim / totalAnnualPremium) * 100 : 0;
+                const sehatPlusLossRatio = totalAnnualPremium > 0 ? (totalSehatPlusFinalClaim / totalAnnualPremium) * 100 : 0;
+                const sehatPlusProfitLoss = totalAnnualPremium - totalSehatPlusFinalClaim;
+                
+                // Display simulation summary
+                const simulationSummaryContainer = document.getElementById('simulation-summary');
+                let modelTableHTML = `<h3 class="text-lg font-semibold mt-8 mb-2 text-gray-800">Model Regresi Linear</h3>
+                        <p class="text-sm text-gray-600 mb-4">Model ini memprediksi besar klaim tahunan berdasarkan faktor risiko.</p>
+                        <div class="overflow-x-auto"><table class="min-w-full text-sm text-left"><thead class="bg-gray-100"><tr>
+                        <th class="p-2 font-medium">Variabel</th><th class="p-2 font-medium">Koefisien (β)</th><th class="p-2 font-medium">Interpretasi</th></tr></thead><tbody>`;
+                
+                const interpretations = {
+                    'Intercept': 'Nilai dasar klaim.', 'Umur': 'Kenaikan klaim per tahun usia.', 'BMI': 'Kenaikan klaim per 1 poin BMI.',
+                    'Jumlah Anak': 'Kenaikan klaim per anak.', 'Status Perokok (Ya)': 'Tambahan biaya klaim jika perokok.', 'Gender (Pria)': 'Tambahan biaya klaim jika pria.',
+                };
+                for(const key in betaCoefficients) {
+                    modelTableHTML += `<tr class="border-b"><td class="p-2">${key}</td><td class="p-2 font-mono">${formatCurrency(betaCoefficients[key])}</td><td class="p-2">${interpretations[key] || `Perbedaan biaya vs region dasar.`}</td></tr>`;
+                }
+                modelTableHTML += `</tbody></table></div>`;
 
                 simulationSummaryContainer.innerHTML = `
-                    <h3 class="text-md font-semibold mb-2 text-gray-800">Koefisien Regresi Linear (Premi Tahunan)</h3>
-                    <p class="text-gray-600">Model regresi linear mengidentifikasi hubungan antara faktor risiko dan klaim. Premi baru dihitung berdasarkan prediksi klaim dari model ini, ditambah margin 20%.</p>
-                    <ul class="list-disc ml-5 mb-4 text-gray-600">
-                        <li><strong>Intercept ($$\beta_0$$):</strong> $${beta0.toFixed(2)}</li>
-                        <li><strong>Umur ($$\beta_1$$):</strong> $${beta1.toFixed(2)}</li>
-                        <li><strong>BMI ($$\beta_2$$):</strong> $${beta2.toFixed(2)}</li>
-                        <li><strong>Status Perokok ($$\beta_3$$):</strong> $${beta3.toFixed(2)}</li>
-                    </ul>
-                    <h3 class="text-md font-semibold mb-2 text-gray-800">Interpretasi Model Regresi Linear</h3>
-                    <ul class="list-disc ml-5 space-y-1 text-gray-600">
-                        <li><strong>Intercept ($$\beta_0$$):</strong> Nilai dasar klaim yang diprediksi untuk seseorang dengan umur 0, BMI 0, dan non-perokok (titik awal perhitungan).</li>
-                        <li><strong>Koefisien Umur ($$\beta_1$$):</strong> Untuk setiap kenaikan **satu tahun** umur, prediksi klaim tahunan meningkat sebesar **$${beta1.toFixed(2)}**.</li>
-                        <li><strong>Koefisien BMI ($$\beta_2$$):</strong> Untuk setiap kenaikan **satu poin** BMI, prediksi klaim tahunan meningkat sebesar **$${beta2.toFixed(2)}**.</li>
-                        <li><strong>Koefisien Status Perokok ($$\beta_3$$):</strong> Seorang perokok diprediksi memiliki klaim tahunan **lebih tinggi sebesar $${beta3.toFixed(2)}** dibandingkan non-perokok, dengan asumsi faktor lain sama.</li>
-                    </ul>
-                    <ul class="list-disc ml-5 space-y-2 mt-6 text-gray-600">
-                        <li>Total Jumlah Polis: ${totalPolicies}</li>
-                        <li>Total Klaim Bruto: $${totalGrossClaim.toFixed(2)}</li>
-                        <li>Total Klaim Setelah Batas Plafon: $${totalCappedClaim.toFixed(2)}</li>
-                        <li>Total Klaim untuk ABJF Re: $${totalAbjfReClaim.toFixed(2)}</li>
-                        <li>Total Premi Tahunan Berdasarkan Model Baru: $${totalAnnualPremium.toFixed(2)}</li>
-                        <li><strong>Loss Ratio ABJF Re: ${abjfReLossRatio.toFixed(2)}%</strong></li>
-                        <hr class="my-4 border-blue-300">
-                        <li class="font-bold text-lg text-blue-900">Perhitungan dengan Bunga Diskon ${discountRate * 100}%</li>
-                        <li>Nilai Sekarang Klaim: $${presentValueClaims.toFixed(2)}</li>
-                        <li>Nilai Sekarang Premi: $${presentValuePremiums.toFixed(2)}</li>
-                        <li><strong>Loss Ratio Setelah Diskon: ${discountedLossRatio.toFixed(2)}%</strong></li>
-                    </ul>
-                `;
+                    <h3 class="text-lg font-semibold mb-2 text-gray-800">Ringkasan Finansial SehatPlus</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Total Premi Tahunan</p><p class="text-xl font-bold text-green-700">${formatCurrency(totalAnnualPremium)}</p></div>
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Total Klaim Akhir</p><p class="text-xl font-bold text-red-700">${formatCurrency(totalSehatPlusFinalClaim)}</p></div>
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Profit / Loss</p><p class="text-xl font-bold ${sehatPlusProfitLoss >= 0 ? 'text-green-700' : 'text-red-700'}">${formatCurrency(sehatPlusProfitLoss)}</p></div>
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Loss Ratio</p><p class="text-xl font-bold ${sehatPlusLossRatio > 80 ? 'text-red-700' : 'text-green-700'}">${sehatPlusLossRatio.toFixed(2)}%</p></div>
+                    </div>
 
-                // Tampilkan tabel hasil simulasi
-                if (simulatedData.length > 0) {
-                    const headers = Object.keys(simulatedData[0]);
-                    const tableHeaders = headers.map(header => `<th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider table-header-cell">${header}</th>`).join('');
-                    const tableRows = simulatedData.map((row, index) => {
-                        const rowClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
-                        const rowData = headers.map(header => `<td class="px-6 py-4 whitespace-nowrap text-gray-700">${row[header]}</td>`).join('');
-                        return `<tr class="${rowClass}">${rowData}</tr>`;
-                    }).join('');
-                    
-                    resultsTableContainer.innerHTML = `
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-blue-200">
-                                <thead class="bg-blue-900">
-                                    <tr>${tableHeaders}</tr>
-                                </thead>
-                                <tbody class="divide-y divide-blue-200">
-                                    ${tableRows}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                } else {
-                    resultsTableContainer.innerHTML = "<p class='text-center text-gray-600'>Tidak ada data valid yang ditemukan.</p>";
+                    <h3 class="text-lg font-semibold mt-6 mb-2 text-gray-800">Ringkasan Reasuransi (ABJF Re)</h3>
+                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Total Polis</p><p class="text-xl font-bold text-gray-800">${totalPolicies}</p></div>
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Total Premi Tahunan</p><p class="text-xl font-bold text-green-700">${formatCurrency(totalAnnualPremium)}</p></div>
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Total Klaim Ditanggung</p><p class="text-xl font-bold text-red-700">${formatCurrency(totalAbjfReClaim)}</p></div>
+                         <div class="summary-card text-center"><p class="text-sm text-gray-600">Loss Ratio vs Premi</p><p class="text-xl font-bold ${abjfReLossRatio > 80 ? 'text-red-700' : 'text-green-700'}">${abjfReLossRatio.toFixed(2)}%</p></div>
+                    </div>
+                    ${modelTableHTML}
+                `;
+                MathJax.typesetPromise();
+
+                // Display results table
+                const resultsTableContainer = document.getElementById('results-table-container');
+                const top100Data = simulatedData.slice(0, 100);
+                if (top100Data.length > 0) {
+                    const headers = ['Umur', 'BMI', 'Status Perokok', 'Region', 'Besar Klaim', 'Premi (Bulanan)', 'Premi Tahunan', 'Klaim Akhir SehatPlus', 'Klaim ABJF Re'];
+                    let tableHTML = '<table class="min-w-full text-xs text-left"><thead><tr class="bg-gray-100">';
+                    headers.forEach(h => tableHTML += `<th class="p-2 font-medium">${h}</th>`);
+                    tableHTML += '</tr></thead><tbody>';
+                    top100Data.forEach(row => {
+                        tableHTML += '<tr class="border-b">';
+                        headers.forEach(h => {
+                            let val = row[h];
+                            if (h === 'Besar Klaim') val = formatCurrency(parseFloat(val));
+                            tableHTML += `<td class="p-2">${val !== undefined ? val : ''}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody></table>';
+                    resultsTableContainer.innerHTML = tableHTML;
                 }
 
-                loadingDiv.style.display = 'none';
-                outputDiv.style.display = 'block';
+                // Charts
+                const regionCounts = filteredJsonData.reduce((acc, row) => {
+                    const region = row.Region || 'Unknown';
+                    acc[region] = (acc[region] || 0) + 1;
+                    return acc;
+                }, {});
+                const regionCtx = document.getElementById('regionChart').getContext('2d');
+                if (regionChartInstance) regionChartInstance.destroy();
+                regionChartInstance = new Chart(regionCtx, { type: 'doughnut', data: {
+                    labels: Object.keys(regionCounts),
+                    datasets: [{ data: Object.values(regionCounts), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#ec4899'] }]
+                }});
+
+                const claimValues = filteredJsonData.map(row => parseFloat(row['Besar Klaim'])).filter(v => !isNaN(v));
+                const maxClaim = Math.max(...claimValues);
+                const binWidth = Math.ceil(maxClaim / 15 / 1000) * 1000 || 1000;
+                const bins = {};
+                claimValues.forEach(val => {
+                    const binStart = Math.floor(val / binWidth) * binWidth;
+                    const binLabel = `${formatCurrency(binStart)}`;
+                    bins[binLabel] = (bins[binLabel] || 0) + 1;
+                });
+                const histogramCtx = document.getElementById('claimsHistogram').getContext('2d');
+                if (claimsHistogramInstance) claimsHistogramInstance.destroy();
+                claimsHistogramInstance = new Chart(histogramCtx, { type: 'bar', data: {
+                    labels: Object.keys(bins),
+                    datasets: [{ label: 'Jumlah Polis', data: Object.values(bins), backgroundColor: '#60a5fa' }]
+                }, options: { scales: { y: { beginAtZero: true }, x: { categoryPercentage: 1.0, barPercentage: 1.0 } } } });
 
             } catch (error) {
                 loadingDiv.style.display = 'none';
                 showAlert(`Terjadi kesalahan saat memproses file: ${error.message}`);
                 console.error(error);
             }
+            loadingDiv.style.display = 'none';
+            mainContentDiv.style.display = 'block';
+            calculatorSection.style.display = 'block';
+        }
+
+        function calculateIndividualPremium() {
+           const individualLoadingDiv = document.getElementById('individual-loading');
+            individualLoadingDiv.style.display = 'block';
+            document.getElementById('individual-result').style.display = 'none';
+
+            setTimeout(() => {
+                const age = parseFloat(document.getElementById('individualAge').value);
+                const bmi = parseFloat(document.getElementById('individualBMI').value);
+                const children = parseFloat(document.getElementById('individualChildren').value);
+                const smoker = document.getElementById('individualSmoker').value;
+                const gender = document.getElementById('individualGender').value;
+                const region = document.getElementById('individualRegion').value;
+
+                const minMonthlyPremium = parseFloat(document.getElementById('minMonthlyPremiumInput').value);
+                const maxMonthlyPremium = parseFloat(document.getElementById('maxMonthlyPremiumInput').value);
+
+                if (!betaCoefficients) {
+                    showAlert("Silakan unggah file dan klik 'Mulai Analisis' terlebih dahulu.");
+                    individualLoadingDiv.style.display = 'none';
+                    return;
+                }
+
+                if (isNaN(age) || isNaN(bmi) || isNaN(children)) {
+                    showAlert("Pastikan semua input terisi dengan benar.");
+                    individualLoadingDiv.style.display = 'none';
+                    return;
+                }
+
+                const predictedClaim = predictClaim(age, bmi, children, smoker, gender, region);
+                let monthlyPremium = predictedClaim / 12;
+                monthlyPremium = Math.max(minMonthlyPremium, Math.min(maxMonthlyPremium, monthlyPremium));
+                const annualPremium = monthlyPremium * 12;
+
+                document.getElementById('predicted-monthly-premium').textContent = `Premi Bulanan: ${formatCurrency(monthlyPremium)}`;
+                document.getElementById('predicted-annual-premium').textContent = `Premi Tahunan: ${formatCurrency(annualPremium)}`;
+                document.getElementById('individual-result').style.display = 'block';
+                individualLoadingDiv.style.display = 'none';
+            }, 500);
         }
     </script>
 </body>
 </html>
+
