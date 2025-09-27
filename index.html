@@ -767,7 +767,7 @@
 
         async function callGeminiAPI(prompt, systemInstruction) {
             const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: systemInstruction }] },
             };
 
