@@ -1,844 +1,716 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dasbor - PulseSirkel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Prototipe Final 🪐 BluVerse</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --blu-primary: #00A3E0; --blu-secondary: #00B4F1; --blu-light: #E5F6FD;
+            --text-dark: #1E293B; --text-light: #64748B; --bg-white: #FFFFFF;
+            --bg-gray: #F1F5F9; --border-color: #E2E8F0; --green: #10B981;
+            --yellow: #F59E0B; --red: #EF4444; --purple: #8B5CF6;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9; /* Tailwind slate-100 */
+            font-family: 'Inter', sans-serif; background-color: var(--bg-gray);
+            color: var(--text-dark); margin: 0; padding: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; gap: 20px;
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #10b981, #059669);
+        .app-container {
+            width: 414px; height: 896px; background-color: var(--bg-white);
+            border-radius: 40px; box-shadow: 0 25px 80px rgba(0,0,0,0.2);
+            border: 12px solid #111827; overflow: hidden; position: relative;
+            display: flex; flex-direction: column;
         }
-        .card {
-            @apply bg-white p-6 rounded-xl shadow-md transition-all duration-300;
-        }
-        .sidebar-link {
-            @apply flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg font-medium transition-colors;
-        }
-        .sidebar-link.active {
-            @apply bg-emerald-100 text-emerald-700;
-        }
-        .page-content {
-            display: none;
-        }
-        .page-content.active {
-            display: block;
-        }
-        .skeleton {
-            @apply bg-gray-200 rounded animate-pulse;
-        }
-        /* Tab Styles */
-        .tab-button {
-            @apply px-4 py-2 font-semibold text-gray-500 rounded-md transition-colors;
-        }
-        .tab-button.active {
-            @apply bg-emerald-500 text-white;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        /* Sidebar transition */
-        #sidebar {
-            transition: transform 0.3s ease-in-out;
-        }
+        .screen { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .screen-content { flex-grow: 1; overflow-y: auto; background-color: var(--bg-gray); padding-bottom: 80px; }
+        .page { display: none; animation: fadeIn 0.4s ease-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header { padding: 20px; background-color: var(--bg-white); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 20px; }
+        .header p { margin: 4px 0 0; font-size: 14px; color: var(--text-light); }
+        .header .add-button { font-size: 28px; color: var(--blu-primary); cursor: pointer; font-weight: 300; }
+
+        .card { background: var(--bg-white); border-radius: 16px; padding: 20px; margin: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .card h2 { margin: 0 0 15px; font-size: 18px; }
+        .card p { margin: 0; line-height: 1.6; color: var(--text-light); }
+        .card .highlight { font-size: 28px; font-weight: 700; color: var(--blu-primary); margin-top: 10px; }
+        .button { padding: 10px 15px; border: none; background-color: var(--blu-primary); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: center; display: inline-block; }
+        
+        /* Dashboard specific */
+        .balance-card { margin: 20px 20px 0; padding: 20px; background: linear-gradient(135deg, var(--blu-primary), var(--blu-secondary)); border-radius: 16px; color: white; box-shadow: 0 4px 15px rgba(0, 163, 224, 0.3); }
+        .balance-card .label { font-size: 14px; opacity: 0.8; }
+        .balance-card .amount { font-size: 32px; font-weight: 700; margin-top: 8px; }
+        .dashboard-section { margin: 20px; }
+        .dashboard-section h2 { font-size: 14px; color: var(--text-light); margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .analysis-item { background-color: var(--bg-white); border-radius: 12px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; }
+        .analysis-item .icon { font-size: 24px; margin-bottom: 8px; }
+        .analysis-item .label { font-size: 12px; font-weight: 500; margin-bottom: 4px; display: block; color: var(--text-light); }
+        .analysis-item .value { font-size: 16px; font-weight: 600; }
+        .blutip-card { background-color: var(--blu-light); border-radius: 12px; padding: 16px; border-left: 5px solid var(--blu-primary); }
+        .blutip-card strong { font-size: 16px; color: var(--blu-primary); }
+        .blutip-card p { margin: 8px 0 0; font-size: 14px; color: var(--text-light); line-height: 1.5; }
+
+        /* Controls Panel (External) */
+        .controls-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 414px; }
+        .controls-panel h3 { margin: 0 0 15px; }
+        .controls-panel .buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .controls-panel button { padding: 10px 15px; border: 1px solid var(--border-color); background-color: #F8FAFC; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; transition: all 0.2s; }
+        .controls-panel button:hover { background-color: var(--blu-light); }
+        .controls-panel button.active { background-color: var(--blu-primary); color: white; border-color: var(--blu-primary); }
+        
+        /* bluPath */
+        .path-switcher { display: flex; padding: 0 20px 20px; gap: 10px; }
+        .path-switcher button { flex: 1; padding: 12px; font-size: 14px; font-weight: 600; border: none; background-color: var(--bg-white); color: var(--text-light); border-radius: 8px; cursor: pointer; }
+        .path-switcher button.active { background-color: var(--blu-primary); color: white; }
+        .path-content { padding: 0 20px; }
+        .path-item { background: var(--bg-white); border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; display: flex; align-items: center; gap: 15px; }
+        .path-item .path-icon { font-size: 24px; background-color: var(--blu-light); color: var(--blu-primary); width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .path-item .path-info { flex: 1; }
+        .path-item h3 { margin: 0 0 8px; font-size: 16px; }
+        .progress-bar { height: 8px; background-color: var(--border-color); border-radius: 4px; overflow: hidden; }
+        .progress { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blu-secondary), var(--blu-primary)); border-radius: 4px; transition: width 0.5s ease-out; }
+        .squad-members { display: flex; margin-top: 12px; }
+        .squad-members img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; margin-left: -10px; }
+        .squad-members img:first-child { margin-left: 0; }
+        
+        /* Grow Path */
+        .risk-selector { display: flex; justify-content: space-around; background-color: #f1f5f9; border-radius: 8px; padding: 5px; margin: 0 20px 20px; }
+        .risk-selector button { flex: 1; padding: 8px; border: none; background: transparent; font-weight: 600; color: var(--text-light); cursor: pointer; border-radius: 6px;}
+        .risk-selector button.active { background-color: var(--bg-white); color: var(--blu-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        #chart-container { height: 250px; }
+        .recommendation-card { background: var(--bg-white); border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid; }
+        .recommendation-card h3 { margin: 0; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .recommendation-card p { font-size: 14px; color: var(--text-light); margin: 8px 0 0; line-height: 1.5; }
+        .risk-tag { font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 20px; color: white; }
+
+        /* bluImpact */
+        .impact-points-card { background: var(--purple); color: white; text-align: center; }
+        .impact-points-card .amount { font-size: 36px; font-weight: 700; margin: 8px 0; }
+        #impact-history-chart { height: 200px; margin-top: 15px; }
+        #auto-allocate-container { padding: 16px; background: var(--bg-white); border-radius: 12px; }
+        .slider-group { margin-bottom: 15px; }
+        .slider-group .labels { display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { height: 8px; cursor: pointer; background: var(--border-color); border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--blu-primary); cursor: pointer; margin-top: -6px; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        
+        /* UPDATED Styles for bluVerse */
+        #page-bluverse .screen-content { padding: 0; position: relative; overflow: hidden; background-color: #87CEEB; transition: background-color 0.5s; }
+        #page-bluverse.theme-night .screen-content { background-color: #0c1e4a; }
+        .bluverse-header { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; color: white; z-index: 10; background: linear-gradient(180deg, rgba(0,0,0,0.3), transparent); text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+        .verse-level { position: absolute; top: 70px; right: 20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; padding: 8px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; z-index: 10; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+        #verse-world { position: relative; width: 100%; height: 100%; }
+        .verse-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.1s linear; }
+        #verse-layer-bg { background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); opacity: 0.1; }
+        .verse-element { position: absolute; cursor: pointer; transition: transform 0.3s ease-out; }
+        .verse-element:hover { transform: scale(1.1); }
+        #verse-house { left: 65%; bottom: 25%; width: 100px; height: 100px; }
+        #verse-tree { left: 15%; bottom: 25%; width: 80px; height: 120px; }
+        .verse-element svg { width: 100%; height: 100%; filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.2)); }
+        .verse-ui { position: absolute; bottom: 90px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 10;}
+        .verse-ui .button { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+        .verse-toast { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; z-index: 20; transition: top 0.5s ease-in-out; }
+        .verse-toast.show { top: 20px; }
+        
+        /* bluLink Popup */
+        #blulink-popup { position: absolute; bottom: -100%; left: 20px; right: 20px; background: #1e293b; color: white; padding: 20px; border-radius: 16px; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); transition: bottom 0.5s ease-in-out; text-align: center; z-index: 10; }
+        #blulink-popup.show { bottom: 90px; }
+        #blulink-popup .icon { font-size: 24px; margin-bottom: 10px; }
+        #blulink-popup h3 { margin: 0 0 10px; color: var(--blu-secondary); }
+        #blulink-popup p { margin: 0 0 15px; font-size: 14px; }
+        #blulink-popup button { width: 100%; padding: 10px; border: none; border-radius: 8px; background-color: var(--blu-primary); color: white; font-weight: 600; cursor: pointer; }
+        #close-blulink { position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+
+        /* Modal */
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: flex-end; }
+        .modal-content { background: var(--bg-gray); width: 100%; border-radius: 20px 20px 0 0; padding: 20px; animation: slideUp 0.3s ease-out; max-height: 80%; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-content h2 { margin: 0 0 20px; }
+        .modal-content .form-group { margin-bottom: 15px; }
+        .modal-content .form-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+        .modal-content .form-group input { width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .checklist-item { display: flex; align-items: center; padding: 12px; background: var(--bg-white); border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
+        .checklist-item.done .icon { background: var(--green); color: white; border-color: var(--green); }
+        .checklist-item.done span { text-decoration: line-through; color: var(--text-light); }
+        .checklist-item .icon { min-width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-color); margin-right: 12px; display: flex; justify-content: center; align-items: center; font-weight: bold; transition: all 0.2s; }
+        
+        .quiz-question { margin-bottom: 20px; }
+        .quiz-question p { margin-bottom: 10px; font-size: 16px; }
+        .quiz-answer { display: block; width: 100%; text-align: left; background: var(--bg-white); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: background-color 0.2s, color 0.2s; font-size: 14px; }
+        .quiz-answer:hover:not(:disabled) { background-color: var(--blu-light); }
+        #quiz-result { display: none; font-weight: bold; text-align: center; padding: 15px; border-radius: 8px; margin-top: 20px; }
+
+        /* Nav Bar */
+        .nav-bar { height: 75px; background-color: var(--bg-white); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; position: relative; z-index: 5; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: var(--text-light); cursor: pointer; width: 60px; }
+        .nav-item.active { color: var(--blu-primary); font-weight: 600; }
+        .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
     </style>
+    <!-- Library Chart.js untuk Grow Path & Impact -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="text-gray-700">
-    <div class="relative min-h-screen md:flex">
-        <!-- Overlay for mobile sidebar -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+<body>
 
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 bg-white shadow-lg w-64 transform -translate-x-full md:relative md:translate-x-0 z-30 flex flex-col">
-            <div class="flex items-center justify-between h-24 border-b px-2">
-                 <div class="text-center w-full">
-                    <div class="flex items-center justify-center space-x-2">
-                        <div class="p-2 bg-emerald-500 rounded-full">
-                            <i data-lucide="heart-pulse" class="text-white"></i>
-                        </div>
-                        <span class="text-2xl font-bold text-emerald-600">PulseSirkel</span>
-                    </div>
-                    <p class="text-[10px] text-gray-500 mt-1 leading-tight">
-                       CAH LANANG JOS JIS<br>
-                        UNTUK KEPERLUAN LOMBA ABCC JEJAK 2025
-                    </p>
-                </div>
-                <button id="sidebar-close" class="md:hidden p-2">
-                    <i data-lucide="x"></i>
-                </button>
+<div class="controls-panel">
+    <h3>Pilih Skenario Pengguna (Simulasi)</h3>
+    <div class="buttons" id="scenario-buttons"></div>
+</div>
+
+<div class="app-container">
+    <div class="screen">
+        <div class="screen-content">
+            
+            <div id="page-dashboard" class="page">
+                <div class="header"><div><h1 id="user-greeting"></h1><p>Karena uangmu juga punya perasaan.</p></div></div>
+                <div class="balance-card"> <div class="label">Total Aset di BluVerse</div> <div class="amount" id="user-balance"></div> </div>
+                <div class="dashboard-section"> <h2>💠 Analisis bluTrust Engine</h2> <div class="analysis-grid"> <div class="analysis-item"><div class="icon">🧬</div><span class="label">bluDNA</span><span class="value" id="dna-output"></span></div> <div class="analysis-item"><div class="icon">🪞</div><span class="label">bluMirror</span><span class="value" id="mirror-output"></span></div> </div> </div>
+                <div class="dashboard-section"> <h2>💬 Nasehat Untukmu (bluTIP)</h2> <div id="blutip-container"></div> </div>
+                <div class="dashboard-section"><h2>⚡ Aksi Cepat</h2><div class="analysis-grid"><div class="analysis-item" style="cursor: pointer;"><div class="icon">💸</div><span class="label">Bayar</span><span class="value">QRIS</span></div><div class="analysis-item" style="cursor: pointer;"><div class="icon">📲</div><span class="label">Top Up</span><span class="value">e-Wallet</span></div></div></div>
             </div>
-            <nav id="sidebar-nav" class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <a href="#" class="sidebar-link active" data-target="dasbor" data-title="Selamat Datang, Budi!">
-                    <i data-lucide="layout-dashboard"></i>
-                    <span>Dasbor</span>
-                </a>
-                 <a href="#" class="sidebar-link" data-target="asisten-ai" data-title="Asisten Kesehatan AI">
-                    <i data-lucide="bot"></i>
-                    <span>Asisten AI</span>
-                </a>
-                <a href="#" class="sidebar-link" data-target="sirkel-vital" data-title="Aktivitas SirkelVital">
-                    <i data-lucide="award"></i>
-                    <span>SirkelVital</span>
-                </a>
-                <a href="#" class="sidebar-link" data-target="sirkel-bakti" data-title="Pantau SirkelBakti">
-                    <i data-lucide="heart-handshake"></i>
-                    <span>SirkelBakti</span>
-                </a>
-                <a href="#" class="sidebar-link" data-target="rekomendasi-ai" data-title="Jadwal & Rekomendasi">
-                    <i data-lucide="brain-circuit"></i>
-                    <span>Jadwal & Rekomendasi</span>
-                </a>
-                <a href="#" class="sidebar-link" data-target="marketplace" data-title="Jelajahi Marketplace">
-                    <i data-lucide="shopping-cart"></i>
-                    <span>Marketplace</span>
-                </a>
-                <a href="#" class="sidebar-link" data-target="dompet" data-title="Dompet PulseToken">
-                    <i data-lucide="wallet"></i>
-                    <span>Dompet Token</span>
-                </a>
-                 <a href="#" class="sidebar-link" data-target="perangkat" data-title="Perangkat Terhubung">
-                    <i data-lucide="watch"></i>
-                    <span>Perangkat Terhubung</span>
-                </a>
-                 <a href="#" class="sidebar-link" data-target="profil" data-title="Profil Saya">
-                    <i data-lucide="user"></i>
-                    <span>Profil Saya</span>
-                </a>
-                 <a href="#" class="sidebar-link" data-target="tata-kelola" data-title="Tata Kelola Komunitas">
-                    <i data-lucide="vote"></i>
-                    <span>Tata Kelola</span>
-                </a>
-            </nav>
-            <div class="px-4 py-6 border-t">
-                 <a href="#" class="sidebar-link bg-red-50 text-red-600 hover:bg-red-100">
-                    <i data-lucide="log-out"></i>
-                    <span>Keluar</span>
-                </a>
+
+            <div id="page-blupath" class="page">
+                 <div class="header">
+                     <div><h1>🌍 bluPath Experience</h1><p>Pilih perjalanan finansialmu.</p></div>
+                     <span class="add-button" id="add-path-btn">+</span>
+                 </div>
+                 <div class="path-switcher">
+                     <button id="solo-path-btn" class="active">Solo Path</button>
+                     <button id="squad-path-btn">Squad Path</button>
+                 </div>
+                 <div id="solo-path-content" class="path-content"></div>
+                 <div id="squad-path-content" class="path-content" style="display:none;"></div>
             </div>
-        </aside>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="flex justify-between items-center p-4 sm:p-6 bg-white border-b">
-                <div class="flex items-center">
-                    <button id="menu-toggle" class="md:hidden mr-4 text-gray-600">
-                        <i data-lucide="menu"></i>
-                    </button>
-                    <h1 id="page-title" class="text-2xl font-bold text-gray-800">Selamat Datang, Budi!</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                     <div class="relative">
-                        <button id="notif-toggle" class="relative text-gray-500 hover:text-gray-700">
-                            <i data-lucide="bell"></i>
-                            <span class="absolute top-0 right-0 h-2 w-2 bg-emerald-500 rounded-full"></span>
-                        </button>
-                        <!-- Notification Dropdown -->
-                        <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-10">
-                            <div class="py-2 px-4 font-bold text-gray-700 border-b">Notifikasi</div>
-                            <div class="divide-y">
-                                <a href="#" class="flex items-start space-x-3 px-4 py-3 hover:bg-gray-50">
-                                    <i data-lucide="gift" class="text-emerald-500 mt-1"></i>
-                                    <div>
-                                        <p class="font-semibold text-sm">Selamat! Anda mendapat +5 Token</p>
-                                        <p class="text-xs text-gray-500">Dari tidur yang cukup semalam.</p>
-                                    </div>
-                                </a>
-                                <a href="#" class="flex items-start space-x-3 px-4 py-3 hover:bg-gray-50">
-                                    <i data-lucide="zap" class="text-yellow-500 mt-1"></i>
-                                    <div>
-                                        <p class="font-semibold text-sm">Tantangan baru tersedia!</p>
-                                        <p class="text-xs text-gray-500">'Jalan Pagi 30 Menit' menanti Anda.</p>
-                                    </div>
-                                </a>
-                                <a href="#" class="flex items-start space-x-3 px-4 py-3 hover:bg-gray-50">
-                                    <i data-lucide="alert-circle" class="text-blue-500 mt-1"></i>
-                                    <div>
-                                        <p class="font-semibold text-sm">Rekomendasi AI</p>
-                                        <p class="text-xs text-gray-500">Jadwal kontrol kesehatan disarankan.</p>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                         <img src="https://placehold.co/40x40/E2E8F0/475569?text=B" class="w-10 h-10 rounded-full" alt="User Avatar">
-                         <div class="hidden sm:block">
-                            <div class="font-semibold text-gray-800">Budi Santoso</div>
-                            <div class="text-sm text-gray-500">Status: Peserta Emas</div>
-                         </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Content Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
-                <!-- Dasbor Content -->
-                <div id="dasbor-content" class="page-content active">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left Column -->
-                        <div class="lg:col-span-2 space-y-6">
-                            <!-- PulseToken Balance Card -->
-                            <div class="card gradient-bg text-white shadow-lg">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="text-lg font-medium opacity-80">Saldo PulseToken Anda</p>
-                                        <p class="text-4xl font-bold flex items-center space-x-2 mt-1">
-                                            <i data-lucide="bitcoin" class="w-8 h-8"></i>
-                                            <span>1,257.75</span>
-                                        </p>
-                                        <p class="mt-2 opacity-80">Setara dengan ~Rp 125.775 (+Rp 700 hari ini)</p>
-                                    </div>
-                                    <button id="tukar-token-btn" class="px-5 py-2 bg-white/30 text-white font-semibold rounded-lg hover:bg-white/40 transition">
-                                        Tukar Token
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Gemini AI Health Assistant Card -->
-                            <div class="card">
-                                <div class="flex items-center space-x-3 mb-4">
-                                    <i data-lucide="bot" class="text-emerald-500 w-6 h-6"></i>
-                                    <h3 class="text-xl font-bold text-gray-800">Asisten Kesehatan AI</h3>
-                                </div>
-                                <div class="p-4 bg-emerald-50 rounded-lg">
-                                    <p class="font-medium text-emerald-800 mb-3">Tips Cerdas Hari Ini:</p>
-                                    <div id="ai-tip-response">
-                                        <!-- Skeleton loader -->
-                                        <div class="space-y-2">
-                                            <div class="skeleton h-4 w-full"></div>
-                                            <div class="skeleton h-4 w-3/4"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <form id="ai-prompt-form" class="mt-4">
-                                    <div class="relative">
-                                        <input type="text" id="ai-prompt-input" placeholder="Tanya tentang kesehatan Anda..." class="w-full pl-4 pr-12 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600">
-                                            <i data-lucide="send" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- SirkelVital: Active Challenges -->
-                            <div class="card">
-                                <h3 class="text-xl font-bold text-gray-800 mb-4">Aktivitas SirkelVital</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <div class="flex justify-between mb-1">
-                                            <span class="font-medium">Tantangan 10.000 Langkah Harian</span>
-                                            <span class="text-sm font-semibold text-emerald-600">+10 Token/hari</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                            <div class="bg-emerald-500 h-2.5 rounded-full" style="width: 75%"></div>
-                                        </div>
-                                        <p class="text-right text-sm text-gray-500 mt-1">7,500 / 10,000 Langkah</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Column -->
-                        <div class="lg:col-span-1 space-y-6">
-                             <!-- Daily Summary Card -->
-                             <div class="card">
-                                <h3 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Hari Ini</h3>
-                                <div class="space-y-4">
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                        <div class="flex items-center space-x-3">
-                                            <i data-lucide="footprints" class="text-blue-500"></i>
-                                            <span class="font-medium">Langkah</span>
-                                        </div>
-                                        <span id="langkah-data" class="font-bold text-gray-700">7,500</span>
-                                    </div>
-                                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                        <div class="flex items-center space-x-3">
-                                            <i data-lucide="bed-double" class="text-indigo-500"></i>
-                                            <span class="font-medium">Tidur</span>
-                                        </div>
-                                        <span id="tidur-data" class="font-bold text-gray-700">7j 15m</span>
-                                    </div>
-                                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                        <div class="flex items-center space-x-3">
-                                            <i data-lucide="heart-pulse" class="text-red-500"></i>
-                                            <span class="font-medium">Detak Jantung</span>
-                                        </div>
-                                        <span class="font-bold text-gray-700">72 bpm</span>
-                                    </div>
-                                </div>
-                            </div>
-                             <!-- Auto Token Earnings -->
-                            <div class="card bg-emerald-50 border border-emerald-200">
-                                <h3 class="text-xl font-bold text-gray-800 mb-4">Token Otomatis Hari Ini</h3>
-                                <ul class="space-y-3">
-                                    <li class="flex justify-between items-center">
-                                        <div class="flex items-center space-x-3">
-                                            <i data-lucide="bed-double" class="text-blue-500"></i>
-                                            <span class="font-medium">Tidur Cukup</span>
-                                        </div>
-                                        <span class="font-bold text-emerald-600">+5 Token</span>
-                                    </li>
-                                    <li class="flex justify-between items-center">
-                                        <div class="flex items-center space-x-3">
-                                            <i data-lucide="heart-pulse" class="text-red-500"></i>
-                                            <span class="font-medium">Detak Jantung Stabil</span>
-                                        </div>
-                                        <span class="font-bold text-emerald-600">+2 Token</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+            
+            <div id="page-growpath" class="page">
+                <div class="header"><div><h1>💰 Grow Path</h1><p>Belajar investasi tanpa risiko.</p></div></div>
+                
+                <div class="dashboard-section">
+                    <h2>🤖 Rekomendasi Investasi AI</h2>
+                    <p style="margin: -10px 0 15px; font-size: 14px; color: var(--text-light);">Berdasarkan profil bluDNA & bluMirror-mu.</p>
+                    <div id="ai-recommendation-content"></div>
                 </div>
                 
-                 <!-- Asisten AI Content (Full Page) -->
-                <div id="asisten-ai-content" class="page-content">
-                    <div class="card max-w-4xl mx-auto">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Asisten Kesehatan AI</h2>
-                        <p class="text-gray-600 mb-6">Tanyakan apa saja tentang gaya hidup sehat, nutrisi, atau olahraga. Asisten AI akan membantu Anda.</p>
-                        
-                        <div id="ai-chat-response" class="h-80 overflow-y-auto bg-gray-50 p-4 rounded-lg mb-4 border">
-                            <p class="text-center text-gray-500">Silakan ajukan pertanyaan Anda di bawah.</p>
-                        </div>
-                        
-                        <div id="ai-chat-loading" class="hidden text-center my-4">
-                            <div role="status" class="flex justify-center items-center space-x-2">
-                               <svg aria-hidden="true" class="w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-emerald-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0492C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                                </svg>
-                                <span class="text-gray-600">AI sedang berpikir...</span>
-                            </div>
-                        </div>
-                         <form id="ai-chat-form" class="mt-4">
-                            <div class="relative">
-                                <input type="text" id="ai-chat-input" placeholder="Tanya tentang kesehatan Anda..." class="w-full pl-4 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600">
-                                    <i data-lucide="send" class="w-5 h-5"></i>
-                                </button>
-                            </div>
-                        </form>
+                <div class="card">
+                    <h2>Profil Risiko Kamu</h2>
+                    <div class="risk-selector" id="risk-selector">
+                        <button class="active" data-risk="konservatif">Konservatif</button>
+                        <button data-risk="moderat">Moderat</button>
+                        <button data-risk="agresif">Agresif</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Simulasi Pertumbuhan Portofolio</h2>
+                    <p>Proyeksi pertumbuhan investasimu dalam 12 bulan ke depan.</p>
+                    <div id="chart-container"><canvas id="growChart"></canvas></div>
+                </div>
+                <div class="dashboard-section"><h2>Modul Edukasi</h2><div id="edukasi-content" class="path-content"></div></div>
+            </div>
+
+            <div id="page-bluimpact" class="page">
+                 <div class="header"><div><h1>🌱 bluImpact</h1><p>Ubah transaksi jadi aksi baik.</p></div></div>
+                
+                <div class="card impact-points-card">
+                    <h2>Total Poin Dampakmu</h2>
+                    <div class="amount" id="impact-points">0</div>
+                    <p>Poin didapat dari setiap transaksi.</p>
+                </div>
+
+                <div class="dashboard-section">
+                    <h2>Alokasi Poin Otomatis</h2>
+                    <div id="auto-allocate-container"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Riwayat Dampak Kamu</h2>
+                    <p>Lihat bagaimana poinmu telah disalurkan.</p>
+                    <div id="impact-history-chart">
+                        <canvas id="impactChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Rekomendasi AI Content -->
-                <div id="rekomendasi-ai-content" class="page-content">
-                    <div class="space-y-6">
-                        <div class="card bg-blue-50 border border-blue-200">
-                            <h2 class="text-2xl font-bold text-blue-800 mb-3">Jadwal Kontrol Kesehatan Anda</h2>
-                            <p class="text-blue-700 mb-4">Berdasarkan analisis data detak jantung istirahat dan pola tidur Anda selama 3 bulan terakhir, AI kami merekomendasikan Anda untuk melakukan pemeriksaan kesehatan umum.</p>
-                            <div class="bg-white p-4 rounded-lg text-center">
-                                <p class="text-lg font-semibold text-gray-700">Waktu yang Disarankan:</p>
-                                <p class="text-3xl font-bold text-blue-600 my-2">Oktober - November 2025</p>
-                                <button class="mt-4 w-full md:w-auto px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition">
-                                    Buat Jadwal Sekarang
-                                </button>
-                            </div>
-                        </div>
+                <div class="dashboard-section"><h2>Ikuti Quest Sosial</h2><div id="social-quest-content" class="path-content"></div></div>
+            </div>
 
-                        <div class="card">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Rekomendasi Rumah Sakit Terdekat</h2>
-                             <div class="space-y-4">
-                                <!-- Hospital 1 -->
-                                <div class="flex flex-col md:flex-row items-start md:items-center justify-between p-4 border rounded-lg hover:shadow-lg transition">
-                                    <div class="flex items-start space-x-4">
-                                        <div class="bg-emerald-100 p-3 rounded-lg">
-                                            <i data-lucide="hospital" class="w-8 h-8 text-emerald-600"></i>
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-lg text-gray-800">RS Mitra Keluarga Surabaya</p>
-                                            <p class="text-sm text-gray-500">~5 km dari lokasi Anda</p>
-                                            <div class="mt-2 flex items-center space-x-2 text-xs">
-                                                <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full font-medium">Pusat Jantung Unggulan</span>
-                                                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full font-medium">Mitra Platinum</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button class="mt-4 md:mt-0 w-full md:w-auto px-4 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition">
-                                        Buat Janji
-                                    </button>
-                                </div>
-                                <!-- Hospital 2 -->
-                                <div class="flex flex-col md:flex-row items-start md:items-center justify-between p-4 border rounded-lg hover:shadow-lg transition">
-                                     <div class="flex items-start space-x-4">
-                                         <div class="bg-emerald-100 p-3 rounded-lg">
-                                            <i data-lucide="hospital" class="w-8 h-8 text-emerald-600"></i>
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-lg text-gray-800">RS Permata Surabaya</p>
-                                            <p class="text-sm text-gray-500">~7 km dari lokasi Anda</p>
-                                            <div class="mt-2 flex items-center space-x-2 text-xs">
-                                                <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full font-medium">Layanan Cepat</span>
-                                                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full font-medium">Mitra Emas</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button class="mt-4 md:mt-0 w-full md:w-auto px-4 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition">
-                                        Buat Janji
-                                    </button>
-                                </div>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SirkelVital Content -->
-                 <div id="sirkel-vital-content" class="page-content">
-                    <div class="card">
-                        <div id="sirkel-vital-tabs" class="mb-6 border-b">
-                            <nav class="flex space-x-2">
-                                <button class="tab-button active" data-target="tantangan-tab">Tantangan</button>
-                                <button class="tab-button" data-target="papan-skor-tab">Papan Skor</button>
-                                <button class="tab-button" data-target="pencapaian-tab">Pencapaian</button>
-                            </nav>
-                        </div>
-                        
-                        <!-- Tab Content -->
-                        <div id="tantangan-tab" class="tab-content active">
-                             <h3 class="text-xl font-bold text-gray-800 mb-4">Tantangan Aktif Saya</h3>
-                             <div class="space-y-6">
-                                <div>
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="font-medium">Tantangan 10.000 Langkah Harian</span>
-                                        <span class="text-sm font-semibold text-emerald-600">+10 Token/hari</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-3"><div class="bg-emerald-500 h-3 rounded-full" style="width: 75%"></div></div>
-                                    <p class="text-right text-sm text-gray-500 mt-1">7,500 / 10,000 Langkah</p>
-                                </div>
-                                 <div>
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="font-medium">Tidur Berkualitas 7 Jam</span>
-                                        <span class="text-sm font-semibold text-emerald-600">+5 Token/hari</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-3"><div class="bg-blue-500 h-3 rounded-full" style="width: 100%"></div></div>
-                                    <p class="text-right text-sm text-gray-500 mt-1">7j 15m / 7j 0m (Selesai)</p>
-                                </div>
-                             </div>
-                             <button class="mt-6 w-full py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition">Cari Tantangan Baru</button>
-                        </div>
-
-                        <div id="papan-skor-tab" class="tab-content">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4">Papan Skor Sirkel "Keluarga Sehat"</h3>
-                            <ul class="space-y-3">
-                                <li class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                                    <div class="flex items-center space-x-3"><i data-lucide="trophy" class="text-yellow-500"></i><span class="font-bold">1. Budi Santoso (Anda)</span></div>
-                                    <span class="font-bold text-yellow-600">1,520 Poin</span>
-                                </li>
-                                <li class="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
-                                    <div class="flex items-center space-x-3"><span class="font-semibold w-5 text-center">2.</span><span class="font-medium">Ibu Siti</span></div>
-                                    <span class="font-semibold text-gray-600">1,350 Poin</span>
-                                </li>
-                                <li class="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
-                                    <div class="flex items-center space-x-3"><span class="font-semibold w-5 text-center">3.</span><span class="font-medium">Ayah Joko</span></div>
-                                    <span class="font-semibold text-gray-600">1,210 Poin</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div id="pencapaian-tab" class="tab-content">
-                             <h3 class="text-xl font-bold text-gray-800 mb-4">Lencana Pencapaian Saya</h3>
-                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-center">
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    <i data-lucide="flame" class="w-12 h-12 text-orange-500 mx-auto"></i>
-                                    <p class="font-semibold mt-2">Pejuang 7 Hari</p>
-                                    <p class="text-xs text-gray-500">Aktif 7 hari berturut-turut</p>
-                                </div>
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    <i data-lucide="footprints" class="w-12 h-12 text-blue-500 mx-auto"></i>
-                                    <p class="font-semibold mt-2">Maraton Mini</p>
-                                    <p class="text-xs text-gray-500">Mencapai 100rb langkah</p>
-                                </div>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SirkelBakti Content -->
-                <div id="sirkel-bakti-content" class="page-content">
-                    <div class="card">
-                         <h3 class="text-xl font-bold text-gray-800 mb-4">Pantau Kesehatan Keluarga (SirkelBakti)</h3>
-                         <div class="space-y-4">
-                            <!-- Family Member 1 -->
-                            <div class="p-4 bg-gray-50 rounded-lg border">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-4">
-                                        <img src="https://placehold.co/50x50/FFE4E6/DC2626?text=Ibu" class="w-12 h-12 rounded-full" alt="Ibu">
-                                        <div>
-                                            <p class="font-bold text-lg">Ibu Siti</p>
-                                            <p class="text-sm text-gray-500">Hubungan: Ibu</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-sm font-medium text-emerald-600">Imbalan Terkumpul</p>
-                                        <p class="font-bold">+150 Token</p>
-                                    </div>
-                                </div>
-                                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="p-3 bg-white rounded-md">
-                                        <p class="text-sm font-semibold">Pengingat Minum Obat</p>
-                                        <p class="text-gray-600">Jadwal: 08:00 & 20:00</p>
-                                        <button class="mt-2 w-full text-sm py-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Kirim Pengingat</button>
-                                    </div>
-                                    <div class="p-3 bg-white rounded-md">
-                                        <p class="text-sm font-semibold">Jadwal MCU</p>
-                                        <p class="text-gray-600">Berikutnya: 15 Okt 2025</p>
-                                        <button class="mt-2 w-full text-sm py-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200">Antar & Dapatkan +25 Token</button>
-                                    </div>
-                                </div>
-                            </div>
+            <div id="page-bluverse" class="page">
+                 <div class="bluverse-header">
+                     <div><h1>🪐 bluVerse</h1><p>Taman Finansialmu</p></div>
+                 </div>
+                 <div class="verse-level" id="verse-level"></div>
+                 <div id="verse-world">
+                    <div id="verse-layer-bg" class="verse-layer"></div>
+                    <div id="verse-layer-mid" class="verse-layer">
+                         <div id="verse-house" class="verse-element">
+                            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M50 5 L95 40 L85 40 L85 95 L15 95 L15 40 L5 40 Z" fill="#fbbf24" stroke="#f97316" stroke-width="2"/>
+                                <rect x="40" y="65" width="20" height="30" fill="#8d5524"/>
+                            </svg>
+                         </div>
+                         <div id="verse-tree" class="verse-element">
+                            <svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="35" y="70" width="10" height="50" fill="#8d5524"/>
+                                <circle cx="40" cy="45" r="35" fill="#22c55e"/>
+                                <circle cx="25" cy="50" r="25" fill="#4ade80"/>
+                            </svg>
                          </div>
                     </div>
                 </div>
-
-                <!-- Marketplace Content -->
-                <div id="marketplace-content" class="page-content">
-                    <div class="card">
-                        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-                             <h2 class="text-2xl font-bold">Marketplace</h2>
-                             <div class="flex space-x-2 mt-4 md:mt-0">
-                                <button class="px-4 py-1.5 text-sm bg-emerald-500 text-white font-semibold rounded-full">Semua</button>
-                                <button class="px-4 py-1.5 text-sm bg-gray-200 text-gray-700 font-semibold rounded-full">Kebugaran</button>
-                                <button class="px-4 py-1.5 text-sm bg-gray-200 text-gray-700 font-semibold rounded-full">Makanan Sehat</button>
-                                <button class="px-4 py-1.5 text-sm bg-gray-200 text-gray-700 font-semibold rounded-full">Voucher</button>
-                             </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <!-- Product Card -->
-                            <div class="bg-gray-50 rounded-lg p-4 text-center border hover:shadow-lg transition">
-                                <img src="https://placehold.co/150x150/e0f2f1/10b981?text=Gym" alt="Product" class="w-full h-32 object-cover rounded-md mx-auto">
-                                <p class="font-bold mt-4">Voucher Gym 1 Bulan</p>
-                                <p class="text-sm text-gray-500">Fitness Center</p>
-                                <p class="text-emerald-600 font-bold my-2">2,500 Token</p>
-                                <button class="w-full mt-2 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition">Tukar</button>
-                            </div>
-                             <div class="bg-gray-50 rounded-lg p-4 text-center border hover:shadow-lg transition">
-                                <img src="https://placehold.co/150x150/e0f2f1/10b981?text=MCU" alt="Product" class="w-full h-32 object-cover rounded-md mx-auto">
-                                <p class="font-bold mt-4">Paket Medical Check-Up</p>
-                                <p class="text-sm text-gray-500">Klinik Sehat Selalu</p>
-                                <p class="text-emerald-600 font-bold my-2">5,000 Token</p>
-                                <button class="w-full mt-2 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition">Tukar</button>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-4 text-center border hover:shadow-lg transition">
-                                <img src="https://placehold.co/150x150/e0f2f1/10b981?text=Katering" alt="Product" class="w-full h-32 object-cover rounded-md mx-auto">
-                                <p class="font-bold mt-4">Katering Sehat 1 Minggu</p>
-                                <p class="text-sm text-gray-500">Dapur Fit</p>
-                                <p class="text-emerald-600 font-bold my-2">1,750 Token</p>
-                                <button class="w-full mt-2 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition">Tukar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dompet Content -->
-                <div id="dompet-content" class="page-content">
-                     <div class="card">
-                        <h2 class="text-2xl font-bold mb-4">Riwayat Transaksi</h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="p-3 font-semibold">Tanggal</th>
-                                        <th class="p-3 font-semibold">Deskripsi</th>
-                                        <th class="p-3 font-semibold text-right">Jumlah</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b">
-                                        <td class="p-3">27 Sep 2025</td>
-                                        <td class="p-3 flex items-center space-x-2"><i data-lucide="arrow-down-circle" class="text-emerald-500"></i><span>Token dari Tidur Cukup</span></td>
-                                        <td class="p-3 text-right font-semibold text-emerald-600">+5.00</td>
-                                    </tr>
-                                    <tr class="border-b">
-                                        <td class="p-3">26 Sep 2025</td>
-                                        <td class="p-3 flex items-center space-x-2"><i data-lucide="arrow-up-circle" class="text-red-500"></i><span>Penukaran Voucher Kopi</span></td>
-                                        <td class="p-3 text-right font-semibold text-red-600">-25.00</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Perangkat Content -->
-                <div id="perangkat-content" class="page-content">
-                    <div class="card max-w-2xl mx-auto">
-                        <h2 class="text-2xl font-bold mb-6">Kelola Perangkat Terhubung</h2>
-                        <div class="p-4 border rounded-lg flex items-center justify-between">
-                             <div class="flex items-center space-x-4">
-                                <i data-lucide="smartphone" class="w-10 h-10 text-emerald-600"></i>
-                                <div>
-                                    <p class="font-bold">Apple Watch (Budi)</p>
-                                    <p class="text-sm text-gray-500">Terakhir sinkron: Baru saja</p>
-                                </div>
-                             </div>
-                             <button class="px-4 py-2 bg-red-100 text-red-700 font-semibold rounded-lg">Putuskan</button>
-                        </div>
-                         <h3 class="text-xl font-bold mt-8 mb-4">Hubungkan Perangkat Baru</h3>
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <button class="w-full p-4 border rounded-lg flex items-center space-x-3 hover:bg-gray-50">
-                                <i data-lucide="smartphone" class="w-6 h-6"></i>
-                                <span class="font-semibold">Hubungkan Google Fit</span>
-                            </button>
-                             <button class="w-full p-4 border rounded-lg flex items-center space-x-3 hover:bg-gray-50">
-                                <i data-lucide="smartphone" class="w-6 h-6"></i>
-                                <span class="font-semibold">Hubungkan Apple Health</span>
-                            </button>
-                         </div>
-                    </div>
-                </div>
-
-                <!-- Profil Content -->
-                <div id="profil-content" class="page-content">
-                     <div class="card max-w-2xl mx-auto">
-                        <h2 class="text-2xl font-bold mb-6">Profil Saya</h2>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="font-semibold text-sm">Nama Lengkap</label>
-                                <input type="text" value="Budi Santoso" class="w-full mt-1 p-2 border rounded-md bg-gray-100" readonly>
-                            </div>
-                            <div>
-                                <label class="font-semibold text-sm">Email</label>
-                                <input type="email" value="budi.s@email.com" class="w-full mt-1 p-2 border rounded-md bg-gray-100" readonly>
-                            </div>
-                            <button class="w-full py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition">Ubah Profil</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tata Kelola Content -->
-                <div id="tata-kelola-content" class="page-content">
-                    <div class="card">
-                        <h2 class="text-2xl font-bold mb-4">Tata Kelola Komunitas (DAO)</h2>
-                        <p class="mb-6 text-gray-600">Gunakan PulseToken Anda untuk memberikan suara pada proposal yang akan membentuk masa depan ekosistem PulseSirkel. Setiap token adalah suara Anda.</p>
-                        
-                        <h3 class="text-xl font-bold mb-4">Proposal Aktif</h3>
-                        <div class="p-4 border rounded-lg space-y-3">
-                             <h4 class="font-bold text-lg">Kemitraan Baru dengan Toko Organik?</h4>
-                             <p class="text-sm text-gray-500">Proposal untuk menambahkan "Toko Sehat Organik" sebagai mitra baru di Marketplace.</p>
-                             <div class="flex space-x-4 pt-2">
-                                <button class="w-full py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600">Setuju</button>
-                                <button class="w-full py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Tidak Setuju</button>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+                 <div id="verse-toast" class="verse-toast"></div>
+                 <div class="verse-ui">
+                     <button class="button" id="change-theme-btn">☀️ Ganti Tema</button>
+                     <button class="button" id="visit-squad-btn">👥 Kunjungi Squad</button>
+                 </div>
+            </div>
+        </div>
+        
+        <div id="blulink-popup"> <button id="close-blulink">&times;</button> <div class="icon">🔗</div> <h3>bluLink</h3> <p id="blulink-message"></p> <button id="blulink-action">Lihat Rekomendasi</button> </div>
+        <div class="nav-bar">
+            <div class="nav-item active" data-page="page-dashboard"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z"/><path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z"/></svg>Beranda</div>
+            <div class="nav-item" data-page="page-blupath"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M15.54.14a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15 .03a.5.5 0 0 1 .54.11z"/></svg>bluPath</div>
+            <div class="nav-item" data-page="page-growpath"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 11H2v3h2zm4-3H6v6h2zm4-3h-2v9h2zM12 1a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/></svg>Grow</div>
+            <div class="nav-item" data-page="page-bluimpact"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m4.646-7.646a.5.5 0 0 1 .708 0L8 10.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708m.708-3.5a.5.5 0 0 1 .708 0L8 6.793l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708"/></svg>Impact</div>
+            <div class="nav-item" data-page="page-bluverse"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M3.5 8a4.5 4.5 0 0 1 7.734-3.167.5.5 0 0 0 .5-.866A5.5 5.5 0 0 0 2.5 8a.5.5 0 0 0 1 0m1.536-2.735a.5.5 0 0 0-.866.5A3.5 3.5 0 0 1 8.55 3.55a.5.5 0 0 0 .5-.866 4.5 4.5 0 0 0-4.014 2.585M12.5 8a.5.5 0 0 0-1 0 3.5 3.5 0 0 1-5.036 2.735a.5.5 0 0 0-.5.866A4.5 4.5 0 0 0 12.5 8m-1.536 2.735a.5.5 0 0 0 .866-.5A3.5 3.5 0 0 1 7.45 12.45a.5.5 0 0 0-.5.866 4.5 4.5 0 0 0 4.014-2.585"/></svg>Verse</div>
         </div>
     </div>
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content" id="modal-content"></div>
+    </div>
+<script>
+    // --- SCENARIO & APP DATA ---
+    let scenarios = {
+        leaImpulsive: { user: "Lea", balance: 1875200, dna: "Spender", mirror: "Mood Impulsif", tip: { title: "Tidak apa-apa kok butuh jeda.", message: "Terdeteksi perilaku belanja impulsif. Mau coba 'Mindful Spending Mode'?" }, paths: { solo: [{id:1, name: "Playbook: Dana Darurat", progress: 60, icon:"🛡️"}, {id:2, name: "Playbook: Tabungan Konser", progress: 30, icon:"🎤"}], squad: [{id:3, name: "Quest: Liburan Bali", progress: 40, icon:"🏝️"}] }, impact: {carbon: 15, edu: 5, points: 1500, history: [10, 50, 20, 80, 40, 60] }, blulink: null },
+        benniDisciplined: { user: "Benni", balance: 15500000, dna: "Planner", mirror: "Stabil", tip: { title: "Konsistenmu Luar Biasa!", message: "Kerja kerasmu terbayar. Siap naik ke level selanjutnya?" }, paths: { solo: [{id:4, name: "Playbook: Beli Rumah Pertama", progress: 85, icon:"🏠"}, {id:5, name: "Playbook: Dana Pensiun Dini", progress: 40, icon:"🕰️"}], squad: [] }, impact: {carbon: 50, edu: 25, points: 5000, history: [100, 120, 150, 130, 180, 200]}, blulink: { message: "Kamu berhasil konsisten! Mau lanjut belajar investasi di Grow Path?", actionPage: "page-growpath"} },
+    };
+    const pathDetails = {
+        1: { steps: [{ text: "Buat bluSaving Dana Darurat", done: true }, { text: "Aktifkan autodebit", done: true }, { text: "Capai Rp 1 Juta pertama", done: false }] },
+        2: { steps: [{ text: "Buat bluSaving Konser", done: true }, { text: "Ajak teman di Squad (opsional)", done: false }, { text: "Capai 50% target", done: false }] },
+        3: { steps: [{ text: "Undang 3 teman ke Squad", done: true }, { text: "Capai 25% target bersama", done: true }, { text: "Capai 50% target bersama", done: false }] },
+        4: { steps: [{ text: "Buat bluSaving DP Rumah", done: true }, { text: "Aktifkan autodebit bulanan", done: true }, { text: "Capai 50% target", done: true }, { text: "Konsultasi KPR Partner", done: false }] },
+        5: { steps: [{ text: "Buat bluSaving Pensiun", done: true }, { text: "Pelajari Modul Investasi", done: false }, { text: "Mulai investasi rutin", done: false }] }
+    };
+    const educationModules = [{title: "Apa itu Reksa Dana?", icon:"📚"}, {title: "Memulai Investasi Saham", icon:"📈"}, {title:"Diversifikasi Portofolio", icon:"🎨"}];
+    const educationQuizzes = {
+        "Apa itu Reksa Dana?": { questions: [ { q: "Keuntungan utama Reksa Dana?", answers: ["Imbal hasil dijamin", "Diversifikasi otomatis", "Bisa dicairkan kapan saja"], correct: 1 }, { q: "Siapa yang mengelola Reksa Dana?", answers: ["Bank Indonesia", "Manajer Investasi", "Pialang Saham"], correct: 1 } ] },
+        "Memulai Investasi Saham": { questions: [ { q: "Risiko utama investasi saham?", answers: ["Volatilitas harga", "Inflasi", "Biaya admin"], correct: 0 } ] },
+        "Diversifikasi Portofolio": { questions: [ { q: "Mengapa diversifikasi penting?", answers: ["Meningkatkan imbal hasil", "Menurunkan risiko", "Menghilangkan biaya"], correct: 1 } ] }
+    };
+    const socialQuests = [{id: 1, title: "Tanam 1000 Pohon Digital", icon:"🌳", progress:78, desc: "Setiap Rp 10.000 transaksi di merchant ramah lingkungan akan menanam 1 pohon digital."}, {id: 2, title: "Donasi Buku untuk Anak", icon:"🎓", progress: 55, desc: "Ayo kumpulkan poin untuk didonasikan menjadi buku cerita."}];
+    const aiRecommendations = {
+        planner_stabil: [ { title: "Reksa Dana Campuran", risk: "Moderat", riskColor: "var(--yellow)", desc: "Alokasi seimbang antara saham dan obligasi." }, { title: "Saham Blue Chip (via Partner)", risk: "Tinggi", riskColor: "var(--red)", desc: "Potensi imbal hasil tinggi dari perusahaan stabil." } ],
+        spender_impulsif: [ { title: "Reksa Dana Pasar Uang", risk: "Rendah", riskColor: "var(--green)", desc: "Pilihan aman untuk memulai, imbal hasil lebih tinggi dari tabungan." }, { title: "bluDeposit", risk: "Sangat Rendah", riskColor: "var(--green)", desc: "Kunci danamu untuk target jangka pendek dengan bunga pasti." } ]
+    };
+    const redeemableRewards = [ {id: 1, name: "Donasi 1 Bibit Pohon", cost: 1000}, {id: 2, name: "e-Voucher Kopi Ramah Lingkungan", cost: 2500}, {id: 3, name: "Badge 'Pahlawan Bumi'", cost: 5000} ];
 
-    <script>
-        lucide.createIcons();
+    let growChartInstance = null; let impactChartInstance = null; let currentScenarioKey = 'leaImpulsive';
+    let currentVerseTheme = 'day';
 
-        // --- Element Selectors ---
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarNav = document.getElementById('sidebar-nav');
-        const pageTitle = document.getElementById('page-title');
-        const notifToggle = document.getElementById('notif-toggle');
-        const notifDropdown = document.getElementById('notif-dropdown');
-        const tukarTokenBtn = document.getElementById('tukar-token-btn');
-        const sirkelVitalTabs = document.getElementById('sirkel-vital-tabs');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const sidebarClose = document.getElementById('sidebar-close');
+    // --- DOM ELEMENTS ---
+    const allPages = document.querySelectorAll('.page');
+    const allNavItems = document.querySelectorAll('.nav-item');
+    const [scenarioButtonsContainer, userGreetingEl, userBalanceEl, dnaOutputEl, mirrorOutputEl, blutipContainer, blulinkPopup, blulinkMessage, blulinkActionBtn, closeBlulinkBtn, soloPathBtn, squadPathBtn, soloPathContent, squadPathContent, riskSelector, edukasiContent, carbonImpactEl, eduImpactEl, socialQuestContent, modalOverlay, modalContent, addPathBtn, aiRecommendationContent, impactPointsEl, autoAllocateContainer, redeemContent, verseLevelEl, verseCanvas, changeThemeBtn, visitSquadBtn, impactChartContainer, verseToast] = 
+    ['scenario-buttons', 'user-greeting', 'user-balance', 'dna-output', 'mirror-output', 'blutip-container', 'blulink-popup', 'blulink-message', 'blulink-action', 'close-blulink', 'solo-path-btn', 'squad-path-btn', 'solo-path-content', 'squad-path-content', 'risk-selector', 'edukasi-content', 'carbon-impact', 'edu-impact', 'social-quest-content', 'modal-overlay', 'modal-content', 'add-path-btn', 'ai-recommendation-content', 'impact-points', 'auto-allocate-container', 'redeem-content', 'verse-level', 'verse-canvas', 'change-theme-btn', 'visit-squad-btn', 'impact-history-chart', 'verse-toast'].map(id => document.getElementById(id));
+    
+    
+    // --- RENDER & LOGIC ---
+    function formatCurrency(amount) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount); }
+    
+    function renderPathItem(item, isSquad = false) {
+        let membersHTML = '';
+        if(isSquad) {
+            membersHTML = `<div class="squad-members"><img src="https://placehold.co/40x40/FFC107/FFFFFF?text=L" alt="Lea"><img src="https://placehold.co/40x40/4CAF50/FFFFFF?text=A" alt="Adi"><img src="https://placehold.co/40x40/E91E63/FFFFFF?text=S" alt="Siti"></div>`;
+        }
+        return `
+            <div class="path-item" data-path-id="${item.id}">
+                <div class="path-icon">${item.icon}</div>
+                <div class="path-info">
+                    <h3>${item.name}</h3>
+                    <div class="progress-bar"><div class="progress" style="width: ${item.progress}%;"></div></div>
+                </div>
+            </div>
+        `;
+    }
 
+    function showPathDetails(pathId) {
+        const details = pathDetails[pathId];
+        if (!details) return;
+        let checklistHTML = details.steps.map((step, index) => `
+            <div class="checklist-item ${step.done ? 'done' : ''}" data-path-id="${pathId}" data-step-index="${index}">
+                <div class="icon">${step.done ? '✓' : ''}</div>
+                <span>${step.text}</span>
+            </div>
+        `).join('');
+        modalContent.innerHTML = `<h2>Detail Path</h2><div class="checklist">${checklistHTML}</div><button class="button" style="width:100%; margin-top:20px;" onclick="closeModal()">Tutup</button>`;
+        modalOverlay.style.display = 'flex';
+        document.querySelectorAll('.checklist-item').forEach(item => {
+            item.addEventListener('click', () => toggleStep(item.dataset.pathId, item.dataset.stepIndex));
+        });
+    }
 
-        // Gemini AI Elements
-        const aiPromptForm = document.getElementById('ai-prompt-form');
-        const aiPromptInput = document.getElementById('ai-prompt-input');
-        const aiTipResponse = document.getElementById('ai-tip-response');
+    function toggleStep(pathId, stepIndex) {
+        pathDetails[pathId].steps[stepIndex].done = !pathDetails[pathId].steps[stepIndex].done;
         
-        const aiChatForm = document.getElementById('ai-chat-form');
-        const aiChatInput = document.getElementById('ai-chat-input');
-        const aiChatResponse = document.getElementById('ai-chat-response');
-        const aiChatLoading = document.getElementById('ai-chat-loading');
-
-
-        // --- Functions ---
-        const openSidebar = () => {
-            sidebar.classList.remove('-translate-x-full');
-            sidebarOverlay.classList.remove('hidden');
-        };
-
-        const closeSidebar = () => {
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        };
-        
-        // Function to navigate between pages
-        function navigateTo(targetId) {
-            const link = document.querySelector(`.sidebar-link[data-target="${targetId}"]`);
-            if (!link) return;
-
-            const targetTitle = link.dataset.title;
-            const targetContent = document.getElementById(targetId + '-content');
-
-            sidebarNav.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
-            document.querySelectorAll('.page-content').forEach(c => c.classList.remove('active'));
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
-            pageTitle.textContent = targetTitle;
-            
-            // Close sidebar on navigation in mobile view
-            if (window.innerWidth < 768) {
-                closeSidebar();
-            }
+        const currentPaths = [...scenarios[currentScenarioKey].paths.solo, ...scenarios[currentScenarioKey].paths.squad];
+        const path = currentPaths.find(p => p.id == pathId);
+        if (path) {
+            const totalSteps = pathDetails[pathId].steps.length;
+            const doneSteps = pathDetails[pathId].steps.filter(s => s.done).length;
+            path.progress = (doneSteps / totalSteps) * 100;
         }
         
-        // --- Event Listeners ---
-        menuToggle.addEventListener('click', openSidebar);
-        sidebarClose.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
-        
-        sidebarNav.addEventListener('click', (e) => {
-            const link = e.target.closest('.sidebar-link');
-            if (!link) return;
-            e.preventDefault();
-            navigateTo(link.dataset.target);
-        });
-        
-        tukarTokenBtn.addEventListener('click', () => navigateTo('marketplace'));
-        
-        notifToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            notifDropdown.classList.toggle('hidden');
-        });
+        renderScenario(currentScenarioKey);
+        showPathDetails(pathId);
+    }
+    window.closeModal = () => modalOverlay.style.display = 'none';
+    modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 
-        window.addEventListener('click', (e) => {
-            if (!notifDropdown.classList.contains('hidden') && !notifDropdown.contains(e.target) && !notifToggle.contains(e.target)) {
-                notifDropdown.classList.add('hidden');
+    function showAddPathModal() {
+        modalContent.innerHTML = `
+            <h2>Buat Path Baru</h2>
+            <div class="form-group"> <label for="new-path-name">Nama Tujuanmu</label> <input type="text" id="new-path-name" placeholder="Contoh: Tabungan Gadget Baru"> </div>
+            <div class="form-group"> <label for="new-path-icon">Pilih Ikon</label> <input type="text" id="new-path-icon" value="🎯" maxlength="2"> </div>
+            <button class="button" id="save-path-btn" style="width:100%; margin-top:10px;">Simpan Path</button>
+            <button class="button" style="width:100%; margin-top:10px; background-color: var(--text-light);" onclick="closeModal()">Batal</button>
+        `;
+        modalOverlay.style.display = 'flex';
+        document.getElementById('save-path-btn').addEventListener('click', saveNewPath);
+    }
+
+    function saveNewPath() {
+        const newPathName = document.getElementById('new-path-name').value;
+        const newPathIcon = document.getElementById('new-path-icon').value;
+        
+        if(newPathName && newPathName.trim() !== "") {
+            const newPathId = Date.now();
+            const newPath = { id: newPathId, name: newPathName, progress: 0, icon: newPathIcon || "🎯"};
+            pathDetails[newPathId] = { steps: [{ text: `Buat bluSaving "${newPathName}"`, done: false}, {text: "Set Target Tabungan", done: false}]};
+            
+            if (soloPathBtn.classList.contains('active')) scenarios[currentScenarioKey].paths.solo.push(newPath);
+            else scenarios[currentScenarioKey].paths.squad.push(newPath);
+            renderScenario(currentScenarioKey);
+            closeModal();
+        } else alert("Nama Path tidak boleh kosong!");
+    }
+    
+    function renderScenario(scenarioKey) {
+        currentScenarioKey = scenarioKey;
+        const data = scenarios[scenarioKey];
+        
+        userGreetingEl.textContent = `Selamat Datang, ${data.user}!`;
+        userBalanceEl.textContent = formatCurrency(data.balance);
+        dnaOutputEl.textContent = data.dna;
+        mirrorOutputEl.textContent = data.mirror;
+        blutipContainer.innerHTML = `<div class="blutip-card"><strong>${data.tip.title}</strong><p>${data.tip.message}</p></div>`;
+        
+        soloPathContent.innerHTML = data.paths.solo.map(p => renderPathItem(p)).join('');
+        squadPathContent.innerHTML = data.paths.squad.map(p => renderPathItem(p, true)).join('');
+        document.querySelectorAll('#page-blupath .path-item').forEach(item => item.addEventListener('click', () => showPathDetails(item.dataset.pathId)));
+        
+        document.querySelectorAll('.controls-panel button').forEach(button => button.classList.toggle('active', button.dataset.scenario === scenarioKey));
+        
+        blulinkPopup.classList.remove('show');
+        if (data.blulink) {
+            setTimeout(() => {
+                blulinkMessage.textContent = data.blulink.message;
+                blulinkActionBtn.onclick = () => { navigateTo(data.blulink.actionPage); blulinkPopup.classList.remove('show'); };
+                blulinkPopup.classList.add('show');
+            }, 1500);
+        }
+        
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+            switch(activePage.id) {
+                case 'page-growpath':
+                    renderAiRecommendations(data.dna, data.mirror);
+                    renderGrowChart(document.querySelector('.risk-selector button.active').dataset.risk);
+                    break;
+                case 'page-bluimpact':
+                    renderImpactPage(data);
+                    break;
+                case 'page-bluverse':
+                    renderVerseAnimation();
+                    break;
             }
+        }
+    }
+    
+    function renderAiRecommendations(dna, mirror) {
+        let recommendations;
+        if (dna === 'Planner' && mirror === 'Stabil') recommendations = aiRecommendations.planner_stabil;
+        else if (dna === 'Spender' && mirror === 'Mood Impulsif') recommendations = aiRecommendations.spender_impulsif;
+        else recommendations = [ { title: "Mulai dari yang Aman", risk: "Rendah", riskColor: "var(--green)", desc: "Coba Reksa Dana Pasar Uang untuk membiasakan diri dengan investasi." } ];
+        aiRecommendationContent.innerHTML = recommendations.map(rec => `
+            <div class="recommendation-card" style="border-left-color: ${rec.riskColor};">
+                <h3> <span>${rec.title}</span> <span class="risk-tag" style="background-color: ${rec.riskColor};">${rec.risk}</span> </h3>
+                <p>${rec.desc}</p>
+            </div>
+        `).join('');
+    }
+
+    function renderGrowChart(riskProfile) {
+        const ctx = document.getElementById('growChart').getContext('2d');
+        if (growChartInstance) growChartInstance.destroy();
+        const datasets = {
+            konservatif: [15.5, 15.6, 15.7, 15.8, 15.9],
+            moderat: [15.5, 15.8, 16.2, 16.8, 17.5],
+            agresif: [15.5, 16.0, 16.8, 17.2, 18.5]
+        };
+        growChartInstance = new Chart(ctx, {
+            type: 'line', data: { labels: ['Now', '3bln', '6bln', '9bln', '12bln'], datasets: [{ label: 'Proyeksi (Juta Rp)', data: datasets[riskProfile], borderColor: 'rgba(0, 163, 224, 1)', backgroundColor: 'rgba(0, 163, 224, 0.1)', fill: true, tension: 0.4 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: false } } }
         });
+    }
 
-        // Tab navigation for SirkelVital
-        if (sirkelVitalTabs) {
-            sirkelVitalTabs.addEventListener('click', (e) => {
-                const button = e.target.closest('.tab-button');
-                if (!button) return;
+    function renderImpactPage(data) {
+        impactPointsEl.textContent = data.impact.points.toLocaleString('id-ID');
+        
+        autoAllocateContainer.innerHTML = `
+            <div class="slider-group">
+                <div class="labels">
+                    <span>🌳 Lingkungan</span>
+                    <span id="env-percent">50%</span>
+                </div>
+                <input type="range" id="env-slider" min="0" max="100" value="50">
+            </div>
+            <div class="slider-group">
+                <div class="labels">
+                    <span>🎓 Pendidikan</span>
+                    <span id="edu-percent">50%</span>
+                </div>
+                <input type="range" id="edu-slider" min="0" max="100" value="50">
+            </div>
+        `;
+        renderImpactChart(data.impact.history);
+        
+        const envSlider = document.getElementById('env-slider');
+        const eduSlider = document.getElementById('edu-slider');
+        const envPercent = document.getElementById('env-percent');
+        const eduPercent = document.getElementById('edu-percent');
 
-                sirkelVitalTabs.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
+        function updateSliders(source) {
+            if (source === 'env') {
+                eduSlider.value = 100 - envSlider.value;
+            } else {
+                envSlider.value = 100 - eduSlider.value;
+            }
+            envPercent.textContent = `${envSlider.value}%`;
+            eduPercent.textContent = `${eduSlider.value}%`;
+        }
+        envSlider.addEventListener('input', () => updateSliders('env'));
+        eduSlider.addEventListener('input', () => updateSliders('edu'));
+    }
+    
+    function renderImpactChart(historyData) {
+        const ctx = document.getElementById('impactChart').getContext('2d');
+        if (impactChartInstance) impactChartInstance.destroy();
+        impactChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Poin Dampak Terkumpul',
+                    data: historyData,
+                    backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                    borderColor: 'rgba(139, 92, 246, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
+    }
+    
+    function renderVerseAnimation() {
+        const data = scenarios[currentScenarioKey];
+        const houseProgress = data.paths.solo.find(p => p.icon === '🏠')?.progress || 0;
+        const treeProgress = data.impact.points / 100;
+        const verseLevel = Math.floor(([...data.paths.solo, ...data.paths.squad].reduce((acc, p) => acc + p.progress, 0)) / 100);
+        
+        verseLevelEl.textContent = `Level ${verseLevel}`;
+        
+        const houseEl = document.getElementById('verse-house');
+        const treeEl = document.getElementById('verse-tree');
+        const page = document.getElementById('page-bluverse');
 
-                const targetId = button.dataset.target;
-                document.querySelectorAll('#sirkel-vital-content .tab-content').forEach(content => {
-                    content.classList.remove('active');
-                    if (content.id === targetId) {
-                        content.classList.add('active');
-                    }
-                });
+        const houseScale = 0.5 + (houseProgress / 100) * 0.7;
+        houseEl.style.transform = `scale(${houseScale})`;
+
+        const treeScale = 0.5 + (treeProgress / 100) * 0.7;
+        treeEl.style.transform = `scale(${treeScale})`;
+
+        page.classList.toggle('theme-night', currentVerseTheme === 'night');
+    }
+    
+    function showVerseElementDetails(elementType) {
+        const data = scenarios[currentScenarioKey];
+        let modalTitle, modalHTML;
+
+        if (elementType === 'house') {
+            const housePath = data.paths.solo.find(p => p.icon === '🏠');
+            modalTitle = 'Progress Rumah Impian';
+            modalHTML = housePath 
+                ? `<h3>${housePath.name}</h3><div class="progress-bar" style="margin:10px 0;"><div class="progress" style="width:${housePath.progress}%"></div></div><p>${housePath.progress}% menuju tujuanmu!</p>`
+                : `<p>Kamu belum memulai Playbook Beli Rumah Pertama. Mulai sekarang di menu bluPath!</p>`;
+        } else if (elementType === 'tree') {
+            modalTitle = 'Pohon Kebaikanmu';
+            modalHTML = `<h3>Total Impact Points</h3><div class="highlight" style="color:var(--green)">${data.impact.points.toLocaleString('id-ID')}</div><p>Terus berbuat baik dan lihat pohonmu tumbuh semakin besar!</p>`;
+        }
+        modalContent.innerHTML = `<h2>${modalTitle}</h2>${modalHTML}<button class="button" style="width:100%; margin-top:20px;" onclick="closeModal()">Tutup</button>`;
+        modalOverlay.style.display = 'flex';
+    }
+    function showEducationQuiz(moduleTitle) {
+        const quizData = educationQuizzes[moduleTitle];
+        if (!quizData) return;
+
+        let quizHTML = `<h2>${moduleTitle}</h2><div id="quiz-questions">`;
+        quizData.questions.forEach((q, index) => {
+            quizHTML += `<div class="quiz-question" id="question-${index}">
+                            <p><strong>${index + 1}. ${q.q}</strong></p>`;
+            q.answers.forEach((ans, ansIndex) => {
+                quizHTML += `<button class="quiz-answer" onclick="checkAnswer('${moduleTitle}', ${index}, ${ansIndex})">${ans}</button>`;
             });
+            quizHTML += `</div>`;
+        });
+        quizHTML += `</div><p id="quiz-result"></p>`;
+        quizHTML += `<button class="button" style="width:100%; margin-top:20px;" onclick="closeModal()">Tutup</button>`;
+
+        modalContent.innerHTML = quizHTML;
+        modalOverlay.style.display = 'flex';
+    }
+    window.checkAnswer = (moduleTitle, qIndex, ansIndex) => {
+        const questionData = educationQuizzes[moduleTitle].questions[qIndex];
+        const questionDiv = document.getElementById(`question-${qIndex}`);
+        const answerButtons = questionDiv.querySelectorAll('.quiz-answer');
+        const resultEl = document.getElementById('quiz-result');
+
+        answerButtons.forEach(btn => btn.disabled = true);
+
+        if (ansIndex === questionData.correct) {
+            answerButtons[ansIndex].style.backgroundColor = 'var(--green)';
+            answerButtons[ansIndex].style.color = 'white';
+        } else {
+            answerButtons[ansIndex].style.backgroundColor = 'var(--red)';
+            answerButtons[ansIndex].style.color = 'white';
+            answerButtons[questionData.correct].style.backgroundColor = 'var(--green)';
+            answerButtons[questionData.correct].style.opacity = '0.7';
         }
 
+        const allAnswered = Array.from(document.querySelectorAll('.quiz-answer')).every(btn => btn.disabled);
 
-        // AI Assistant Form Handlers
-        aiPromptForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const prompt = aiPromptInput.value.trim();
-            if (prompt) {
-                navigateTo('asisten-ai'); // Pindah ke halaman AI
-                aiChatInput.value = prompt; // Isi input di halaman AI
-                handleAIChat(); // Langsung proses pertanyaan
-                aiPromptInput.value = ''; // Kosongkan input di dasbor
+        if (allAnswered) {
+             resultEl.textContent = "🎉 Selamat! Modul Selesai!";
+             resultEl.style.color = 'var(--green)';
+             resultEl.style.backgroundColor = 'var(--blu-light)';
+             resultEl.style.display = 'block';
+        }
+    }
+    
+    function navigateTo(pageId) {
+        allPages.forEach(p => p.classList.toggle('active', p.id === pageId));
+        allNavItems.forEach(n => n.classList.toggle('active', n.dataset.page === pageId));
+
+        const data = scenarios[currentScenarioKey];
+        if (pageId === 'page-growpath') {
+            renderAiRecommendations(data.dna, data.mirror);
+            renderGrowChart(document.querySelector('.risk-selector button.active').dataset.risk);
+        }
+        if (pageId === 'page-bluimpact') {
+            renderImpactPage(data);
+        }
+        if (pageId === 'page-bluverse') { 
+            renderVerseAnimation();
+        }
+    }
+    
+    // THIS IS THE FIX: The missing function is added here
+    function showSocialQuestDetails(questId) {
+        const quest = socialQuests.find(q => q.id === questId);
+        if (!quest) return;
+        modalContent.innerHTML = `
+            <h2>${quest.icon} ${quest.title}</h2>
+            <p>${quest.desc}</p>
+            <div class="progress-bar" style="margin: 20px 0;"><div class="progress" style="width:${quest.progress}%; background:var(--green)"></div></div>
+            <p style="text-align:center; font-weight:bold;">${quest.progress}% Terkumpul</p>
+            <button class="button" style="width:100%; margin-top:20px;" onclick="closeModal()">Tutup</button>
+        `;
+        modalOverlay.style.display = 'flex';
+    }
+
+    function initialize() {
+        allNavItems.forEach(item => item.addEventListener('click', () => navigateTo(item.dataset.page)));
+    
+        addPathBtn.addEventListener('click', showAddPathModal);
+        closeBlulinkBtn.addEventListener('click', () => blulinkPopup.classList.remove('show'));
+        soloPathBtn.addEventListener('click', () => { soloPathContent.style.display = 'block'; squadPathContent.style.display = 'none'; soloPathBtn.classList.add('active'); squadPathBtn.classList.remove('active'); });
+        squadPathBtn.addEventListener('click', () => { squadPathContent.style.display = 'block'; soloPathContent.style.display = 'none'; squadPathBtn.classList.add('active'); soloPathBtn.classList.remove('active'); });
+        riskSelector.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                riskSelector.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                renderGrowChart(e.target.dataset.risk);
             }
         });
         
-        aiChatForm.addEventListener('submit', (e) => {
-             e.preventDefault();
-             handleAIChat();
+        changeThemeBtn.addEventListener('click', () => {
+            currentVerseTheme = currentVerseTheme === 'day' ? 'night' : 'day';
+            changeThemeBtn.textContent = currentVerseTheme === 'day' ? '🌙 Ganti Tema' : '☀️ Ganti Tema';
+            renderVerseAnimation();
+        });
+        visitSquadBtn.addEventListener('click', () => {
+            modalContent.innerHTML = `<h2>Verse Milik Squad</h2><p>Di sini kamu bisa melihat taman finansial teman-teman satu squad-mu!</p><div style="text-align:center; margin:20px 0;"><img src="https://placehold.co/300x150/1e3a8a/FFFFFF?text=Squad+Verse" style="border-radius:8px;"></div><button class="button" style="width:100%;" onclick="closeModal()">Kembali</button>`;
+            modalOverlay.style.display = 'flex';
+        });
+        document.getElementById('verse-house').addEventListener('click', () => showVerseElementDetails('house'));
+        document.getElementById('verse-tree').addEventListener('click', () => showVerseElementDetails('tree'));
+        document.getElementById('verse-world').addEventListener('mousemove', (e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const dx = (x / rect.width - 0.5) * -30;
+            const dy = (y / rect.height - 0.5) * -30;
+            document.getElementById('verse-layer-mid').style.transform = `translate(${dx}px, ${dy}px)`;
+            document.getElementById('verse-layer-bg').style.transform = `translate(${dx/2}px, ${dy/2}px)`;
         });
 
-        // --- Gemini API Integration ---
-        const API_KEY = "AIzaSyBC8YBgJYHWcW49LNjHlarjwgm56-77ax0"; // Biarkan kosong, akan di-handle oleh environment
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-
-        async function callGeminiAPI(prompt, systemInstruction) {
-            const payload = {
-                contents: [{ role: "user", parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemInstruction }] },
-            };
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                return result.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak bisa merespons saat ini.";
-            } catch (error) {
-                console.error("Error calling Gemini API:", error);
-                return "Terjadi kesalahan saat menghubungi Asisten AI. Coba lagi nanti.";
-            }
-        }
-
-        // Function to get personalized health tip on dashboard load
-        async function getInitialAITip() {
-            const langkah = document.getElementById('langkah-data').textContent;
-            const tidur = document.getElementById('tidur-data').textContent;
-
-            const systemPrompt = "Anda adalah Asisten Kesehatan AI PulseSirkel. Berikan satu saran kesehatan yang singkat (maksimal 2 kalimat), positif, dan sesuai prinsip syariah. Jangan berikan nasihat medis diagnostik.";
-            const userPrompt = `Berdasarkan data kesehatan saya hari ini (langkah: ${langkah}, tidur: ${tidur}), berikan saya satu tips kesehatan yang relevan.`;
-            
-            const response = await callGeminiAPI(userPrompt, systemPrompt);
-            aiTipResponse.innerHTML = `<p class="text-gray-700">${response}</p>`;
-        }
+        Object.keys(scenarios).forEach(key => {
+            const button = document.createElement('button');
+            button.textContent = `${scenarios[key].user} - ${scenarios[key].mirror}`;
+            button.dataset.scenario = key;
+            button.addEventListener('click', () => renderScenario(key));
+            scenarioButtonsContainer.appendChild(button);
+        });
         
-        // Function to handle the full chat interaction
-        async function handleAIChat() {
-            const prompt = aiChatInput.value.trim();
-            if (!prompt) return;
-
-            // Clear placeholder and show loading
-            if (aiChatResponse.querySelector('p')) {
-                 aiChatResponse.innerHTML = '';
-            }
-            aiChatLoading.classList.remove('hidden');
-            aiChatInput.value = ''; // Clear input
-            
-            const userMessageHTML = `<div class="text-right my-2"><div class="inline-block bg-emerald-500 text-white p-3 rounded-lg">${prompt}</div></div>`;
-            aiChatResponse.innerHTML += userMessageHTML;
-            aiChatResponse.scrollTop = aiChatResponse.scrollHeight;
-
-            const systemPrompt = "Anda adalah Asisten Kesehatan AI PulseSirkel. Berikan saran kesehatan yang informatif, positif, dan sesuai dengan prinsip syariah. Jangan memberikan nasihat medis yang bersifat diagnosis. Selalu sarankan untuk berkonsultasi dengan dokter untuk masalah serius. Gunakan paragraf singkat dan poin jika perlu agar mudah dibaca.";
-            
-            const response = await callGeminiAPI(prompt, systemPrompt);
-
-            aiChatLoading.classList.add('hidden');
-            const aiMessageHTML = `<div class="text-left my-2"><div class="inline-block bg-white text-gray-800 p-3 rounded-lg border">${response.replace(/\n/g, '<br>')}</div></div>`;
-            aiChatResponse.innerHTML += aiMessageHTML;
-            aiChatResponse.scrollTop = aiChatResponse.scrollHeight;
-        }
-
-
-        // --- Initial Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            getInitialAITip();
-        });
-
-    </script>
+        edukasiContent.innerHTML = educationModules.map(mod => `
+            <div class="path-item" data-module-title="${mod.title}">
+                <div class="path-icon">${mod.icon}</div>
+                <div class="path-info"><h3>${mod.title}</h3></div>
+            </div>
+        `).join('');
+        document.querySelectorAll('#edukasi-content .path-item').forEach(item => item.addEventListener('click', () => showEducationQuiz(item.dataset.moduleTitle)));
+        
+        socialQuestContent.innerHTML = socialQuests.map(q => `
+            <div class="path-item" data-quest-id="${q.id}">
+                 <div class="path-icon">${q.icon}</div>
+                 <div class="path-info">
+                    <h3>${q.title}</h3>
+                    <div class="progress-bar"><div class="progress" style="width:${q.progress}%; background:var(--green)"></div></div>
+                </div>
+            </div>
+        `).join('');
+        document.querySelectorAll('#social-quest-content .path-item').forEach(item => item.addEventListener('click', () => showSocialQuestDetails(parseInt(item.dataset.questId))));
+        
+        navigateTo('page-dashboard');
+        renderScenario('leaImpulsive');
+    }
+    
+    initialize();
+</script>
 </body>
 </html>
-
-
-
-
 
